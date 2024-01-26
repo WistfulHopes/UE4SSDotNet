@@ -118,6 +118,79 @@ namespace UE4SSDotNetFramework.Framework
 
 	// Public
 
+	public partial struct UnArray
+	{
+		public System.Type GetDataType()
+		{
+			switch (Type)
+			{
+				case PropertyType.ObjectProperty:
+					return typeof(ObjectReference);
+				case PropertyType.Int8Property:
+					return typeof(sbyte);
+				case PropertyType.Int16Property:
+					return typeof(short);
+				case PropertyType.IntProperty:
+					return typeof(int);
+				case PropertyType.Int64Property:
+					return typeof(long);
+				case PropertyType.ByteProperty:
+					return typeof(byte);
+				case PropertyType.UInt16Property:
+					return typeof(ushort);
+				case PropertyType.UInt32Property:
+					return typeof(uint);
+				case PropertyType.UInt64Property:
+					return typeof(ulong);
+				case PropertyType.StructProperty:
+					return typeof(Struct);
+				case PropertyType.ArrayProperty:
+					return typeof(UnArray);
+				case PropertyType.FloatProperty:
+					return typeof(float);
+				case PropertyType.DoubleProperty:
+					return typeof(double);
+				case PropertyType.BoolProperty:
+					return typeof(bool);
+				case PropertyType.EnumProperty:
+					return typeof(Enum);
+				case PropertyType.WeakObjectProperty:
+					return typeof(WeakObjectPtr);
+				case PropertyType.NameProperty:
+				case PropertyType.StrProperty:
+				case PropertyType.TextProperty:
+					return typeof(string);
+			}
+
+			return typeof(object);
+		}
+		
+		public T[] DataToArray<T>()
+		{
+			var size = Marshal.SizeOf(typeof(T));
+			var managedArray = new T[Length];
+
+			for (int i = 0; i < (int)Length; i++)
+			{
+				IntPtr ins = new IntPtr(Data.ToInt64() + i * size);
+				managedArray[i] = Marshal.PtrToStructure<T>(ins);
+			}
+
+			return managedArray;
+		}
+
+		public void ArrayToData<T>(T[] Array)
+		{
+			long longPtr = Data.ToInt64(); // Must work both on x86 and x64
+			for (int I = 0; I < Array.Length; I++)
+			{
+				IntPtr rectPtr = new IntPtr(longPtr);
+				Marshal.StructureToPtr(Array[I], rectPtr, false); // You do not need to erase struct in this case
+				longPtr += Marshal.SizeOf(typeof(T));
+			}
+		}
+	}
+	
 	/// <summary>
 	/// Defines the log level for an output log message
 	/// </summary>
@@ -153,7 +226,7 @@ namespace UE4SSDotNetFramework.Framework
 	/// A representation of the engine's object reference
 	/// </summary>
 	[StructLayout(LayoutKind.Sequential)]
-	public unsafe struct ObjectReference : IEquatable<ObjectReference> {
+	public unsafe class ObjectReference : IEquatable<ObjectReference> {
 		private IntPtr pointer;
 		
 		internal ObjectReference(IntPtr pointer) => Pointer = pointer;
@@ -223,6 +296,23 @@ namespace UE4SSDotNetFramework.Framework
 		/// Invokes a command, function, or an event with optional arguments
 		/// </summary>
 		public bool Invoke(string command) => Object.Invoke(Pointer, command.StringToBytes());
+
+		/// <summary>
+		/// Retrieves the value of the object property
+		/// </summary>
+		public bool GetObjectReference(string name, ref ObjectReference value) {
+			if (name == null)
+				throw new ArgumentNullException(nameof(name));
+
+			IntPtr valuePtr = 0;
+			
+			if (Object.GetObjectReference(Pointer, name.StringToBytes(), ref valuePtr))
+			{
+				value = new ObjectReference(valuePtr);
+			}
+
+			return false;
+		}
 
 		/// <summary>
 		/// Retrieves the value of the bool property
@@ -312,6 +402,37 @@ namespace UE4SSDotNetFramework.Framework
 		}
 
 		/// <summary>
+		/// Retrieves the value of the struct property
+		/// </summary>
+		/// <returns><c>true</c> on success</returns>
+		public bool GetStruct(string name, ref Struct value) {
+			if (name == null)
+				throw new ArgumentNullException(nameof(name));
+
+			IntPtr valuePtr = 0;
+			
+			if (Object.GetStruct(Pointer, name.StringToBytes(), ref valuePtr))
+			{
+				value = new Struct(valuePtr);
+			}
+
+			return false;
+		}
+
+		/// <summary>
+		/// Retrieves the value of the array property
+		/// </summary>
+		/// <returns><c>true</c> on success</returns>
+		public bool GetArray(string name, ref UnArray value) {
+			if (name == null)
+				throw new ArgumentNullException(nameof(name));
+
+			IntPtr valuePtr = 0;
+			
+			return Object.GetArray(Pointer, name.StringToBytes(), ref value);
+		}
+
+		/// <summary>
 		/// Retrieves the value of the float property
 		/// </summary>
 		/// <returns><c>true</c> on success</returns>
@@ -350,6 +471,14 @@ namespace UE4SSDotNetFramework.Framework
 			}
 
 			return false;
+		}
+
+		public bool GetWeakObject(string name, ref WeakObjectPtr value)
+		{
+			if (name == null)
+				throw new ArgumentNullException(nameof(name));
+
+			return Object.GetWeakObject(Pointer, name.StringToBytes(), ref value);
 		}
 
 		/// <summary>
@@ -398,6 +527,17 @@ namespace UE4SSDotNetFramework.Framework
 				throw new ArgumentNullException(nameof(name));
 
 			return Object.SetBool(Pointer, name.StringToBytes(), value);
+		}
+		
+		/// <summary>
+		/// Sets the value of the object property
+		/// </summary>
+		/// <returns><c>true</c> on success</returns>
+		public bool SetObjectReference(string name, ObjectReference value) {
+			if (name == null)
+				throw new ArgumentNullException(nameof(name));
+
+			return Object.SetObjectReference(Pointer, name.StringToBytes(), value.Pointer);
 		}
 
 		/// <summary>
@@ -475,6 +615,28 @@ namespace UE4SSDotNetFramework.Framework
 				throw new ArgumentNullException(nameof(name));
 
 			return Object.SetULong(Pointer, name.StringToBytes(), value);
+		}
+		
+		/// <summary>
+		/// Sets the value of the object property
+		/// </summary>
+		/// <returns><c>true</c> on success</returns>
+		public bool SetStruct(string name, Struct value) {
+			if (name == null)
+				throw new ArgumentNullException(nameof(name));
+
+			return Object.SetStruct(Pointer, name.StringToBytes(), value.Pointer);
+		}
+		
+		/// <summary>
+		/// Sets the value of the object property
+		/// </summary>
+		/// <returns><c>true</c> on success</returns>
+		public bool SetArray(string name, UnArray value) {
+			if (name == null)
+				throw new ArgumentNullException(nameof(name));
+
+			return Object.SetArray(Pointer, name.StringToBytes(), value);
 		}
 
 		/// <summary>
@@ -560,5 +722,45 @@ namespace UE4SSDotNetFramework.Framework
 		/// Returns a hash code for the object
 		/// </summary>
 		public override int GetHashCode() => pointer.GetHashCode();
+	}
+
+	public unsafe class Struct : ObjectReference, IEquatable<Struct>
+	{
+		/// <summary>
+		/// Indicates equality of objects
+		/// </summary>
+		public bool Equals(Struct other) => IsCreated && Pointer == other.Pointer;
+
+		/// <summary>
+		/// Indicates equality of objects
+		/// </summary>
+		public override bool Equals(object value) {
+			if (value == null)
+				return false;
+
+			if (!ReferenceEquals(value.GetType(), typeof(Struct)))
+				return false;
+
+			return Equals((Struct)value);
+		}
+
+		/// <summary>
+		/// Returns a hash code for the object
+		/// </summary>
+		public override int GetHashCode() => Pointer.GetHashCode();
+
+		internal Struct(IntPtr pointer) : base(pointer)
+		{
+			Pointer = pointer;
+		}
+	}
+
+	public partial struct WeakObjectPtr
+	{
+		public WeakObjectPtr(int objectIndex, int objectSerialNumber)
+		{
+			ObjectIndex = objectIndex;
+			ObjectSerialNumber = objectSerialNumber;
+		}
 	}
 }

@@ -165,6 +165,47 @@ internal static class Shared
 		return Collector.GetFunctionPointer(dynamicDelegate);
 	}
 }
+internal enum PropertyType
+{
+	ObjectProperty,
+	ClassProperty,
+	Int8Property,
+	Int16Property,
+	IntProperty,
+	Int64Property,
+	ByteProperty,
+	UInt16Property,
+	UInt32Property,
+	UInt64Property,
+	StructProperty,
+	ArrayProperty,
+	FloatProperty,
+	DoubleProperty,
+	BoolProperty,
+	EnumProperty,
+	WeakObjectProperty,
+	NameProperty,
+	TextProperty,
+	StrProperty,
+	SoftClassProperty,
+	InterfaceProperty,
+	Invalid,
+};
+
+[StructLayout(LayoutKind.Sequential)]
+partial struct UnArray
+{
+	private IntPtr Data;
+	private ulong Length;
+	private PropertyType Type;
+}
+
+[StructLayout(LayoutKind.Sequential)]
+partial struct WeakObjectPtr
+{
+	private int ObjectIndex;
+	private int ObjectSerialNumber;
+}
 
 static unsafe partial class Debug {
 	[DllImport("UE4SS.dll", EntryPoint = @"?Log@Debug@Framework@DotNetLibrary@RC@@SAXW4LogLevel@54@PEBD@Z")]
@@ -181,6 +222,8 @@ internal static unsafe class Object
 	internal static extern IntPtr Find(byte[] name);
 	[DllImport("UE4SS.dll", EntryPoint = @"?GetName@Object@Framework@DotNetLibrary@RC@@SAXPEAVUObject@Unreal@4@PEAD@Z")]
 	internal static extern void GetName(IntPtr @object, byte[] name);
+	[DllImport("UE4SS.dll", EntryPoint = @"?GetObjectReference@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDPEAPEAV564@@Z")]
+	internal static extern bool GetObjectReference(IntPtr @object, byte[] name, ref IntPtr value);
 	[DllImport("UE4SS.dll", EntryPoint = @"?GetBool@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDPEA_N@Z")]
 	internal static extern bool GetBool(IntPtr @object, byte[] name, ref bool value);
 	[DllImport("UE4SS.dll", EntryPoint = @"?GetByte@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDPEAE@Z")]
@@ -197,17 +240,25 @@ internal static unsafe class Object
 	internal static extern bool GetUInt(IntPtr @object, byte[] name, ref uint value);
 	[DllImport("UE4SS.dll", EntryPoint = @"?GetULong@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDPEA_K@Z")]
 	internal static extern bool GetULong(IntPtr @object, byte[] name, ref ulong value);
+	[DllImport("UE4SS.dll", EntryPoint = @"?GetStruct@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDPEAPEAVUStruct@64@@Z")]
+	internal static extern bool GetStruct(IntPtr @object, byte[] name, ref IntPtr value);
+	[DllImport("UE4SS.dll", EntryPoint = @"?GetArray@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDPEAUArray@234@@Z")]
+	internal static extern bool GetArray(IntPtr @object, byte[] name, ref UnArray value);
 	[DllImport("UE4SS.dll", EntryPoint = @"?GetFloat@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDPEAM@Z")]
 	internal static extern bool GetFloat(IntPtr @object, byte[] name, ref float value);
 	[DllImport("UE4SS.dll", EntryPoint = @"?GetDouble@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDPEAN@Z")]
 	internal static extern bool GetDouble(IntPtr @object, byte[] name, ref double value);
 	[DllImport("UE4SS.dll", EntryPoint = @"?GetEnum@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDPEAH@Z")]
 	internal static extern bool GetEnum(IntPtr @object, byte[] name, ref int value);
+	[DllImport("UE4SS.dll", EntryPoint = @"?GetWeakObject@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDPEAUFWeakObjectPtr@64@@Z")]
+	internal static extern bool GetWeakObject(IntPtr @object, byte[] name, ref WeakObjectPtr value);
 	[DllImport("UE4SS.dll", EntryPoint = @"?GetString@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDPEAD@Z")]
 	internal static extern bool GetString(IntPtr @object, byte[] name, byte[] value);
 	[DllImport("UE4SS.dll", EntryPoint = @"?GetText@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDPEAD@Z")]
 	internal static extern bool GetText(IntPtr @object, byte[] name, byte[] value);
-	[DllImport("UE4SS.dll", EntryPoint = @"?SetBool@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBD_N@Z")]
+	[DllImport("UE4SS.dll", EntryPoint = @"?SetObjectReference@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBD0@Z")]
+	internal static extern bool SetObjectReference(IntPtr @object, byte[] name, IntPtr value);
+	[DllImport("UE4SS.dll", EntryPoint = @"?SetByte@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDE@Z")]
 	internal static extern bool SetBool(IntPtr @object, byte[] name, bool value);
 	[DllImport("UE4SS.dll", EntryPoint = @"?SetByte@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDE@Z")]
 	internal static extern bool SetByte(IntPtr @object, byte[] name, byte value);
@@ -223,6 +274,10 @@ internal static unsafe class Object
 	internal static extern bool SetUInt(IntPtr @object, byte[] name, uint value);
 	[DllImport("UE4SS.dll", EntryPoint = @"?SetULong@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBD_K@Z")]
 	internal static extern bool SetULong(IntPtr @object, byte[] name, ulong value);
+	[DllImport("UE4SS.dll", EntryPoint = @"?SetStruct@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDPEAVUStruct@64@@Z")]
+	internal static extern bool SetStruct(IntPtr @object, byte[] name, IntPtr value);
+	[DllImport("UE4SS.dll", EntryPoint = @"?SetArray@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDUUnArray@234@@Z")]
+	internal static extern bool SetArray(IntPtr @object, byte[] name, UnArray value);
 	[DllImport("UE4SS.dll", EntryPoint = @"?SetFloat@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDM@Z")]
 	internal static extern bool SetFloat(IntPtr @object, byte[] name, float value);
 	[DllImport("UE4SS.dll", EntryPoint = @"?SetDouble@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDN@Z")]
