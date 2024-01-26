@@ -237,12 +237,12 @@ namespace UE4SSDotNetFramework.Framework
 		/// <summary>
 		/// Invokes a command, function, or an event with optional arguments
 		/// </summary>
-		public bool Invoke(string command) => Object.Invoke(Pointer, command.StringToBytes());
+		public bool Invoke(ObjectReference function, IntPtr @params) => Object.Invoke(Pointer, function.Pointer, @params);
 
 		/// <summary>
 		/// Retrieves the value of the object property
 		/// </summary>
-		public bool GetObjectReference(string name, ref ObjectReference value) {
+		public ObjectReference? GetObjectReference(string name) {
 			if (name == null)
 				throw new ArgumentNullException(nameof(name));
 
@@ -250,10 +250,27 @@ namespace UE4SSDotNetFramework.Framework
 			
 			if (Object.GetObjectReference(Pointer, name.StringToBytes(), ref valuePtr))
 			{
-				value = new ObjectReference(valuePtr);
+				return new ObjectReference(valuePtr);
 			}
 
-			return false;
+			return null;
+		}
+
+		/// <summary>
+		/// Retrieves the value of the object property
+		/// </summary>
+		public ObjectReference? GetFunction(string name) {
+			if (name == null)
+				throw new ArgumentNullException(nameof(name));
+
+			IntPtr valuePtr = 0;
+			
+			if (Object.GetFunction(Pointer, name.StringToBytes(), ref valuePtr))
+			{
+				return new ObjectReference(valuePtr);
+			}
+
+			return null;
 		}
 
 		/// <summary>
@@ -347,7 +364,7 @@ namespace UE4SSDotNetFramework.Framework
 		/// Retrieves the value of the struct property
 		/// </summary>
 		/// <returns><c>true</c> on success</returns>
-		public bool GetStruct(string name, ref StructReference value) {
+		public StructReference? GetStruct(string name) {
 			if (name == null)
 				throw new ArgumentNullException(nameof(name));
 
@@ -355,10 +372,10 @@ namespace UE4SSDotNetFramework.Framework
 			
 			if (Object.GetStruct(Pointer, name.StringToBytes(), ref valuePtr))
 			{
-				value = new StructReference(valuePtr);
+				return new StructReference(valuePtr);
 			}
 
-			return false;
+			return null;
 		}
 
 		/// <summary>
@@ -720,12 +737,12 @@ namespace UE4SSDotNetFramework.Framework
 			Pointer = pointer;
 		}
 
-		public void GetCDO(ref ObjectReference cdo)
+		public ObjectReference GetCDO()
 		{
 			IntPtr valuePtr = 0;
 
 			Class.GetCDO(Pointer, ref valuePtr);
-			cdo = new ObjectReference(valuePtr);
+			return new ObjectReference(valuePtr);
 		}
 
 		public bool IsChildOf(ClassReference parent)

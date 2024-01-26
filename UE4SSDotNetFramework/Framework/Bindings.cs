@@ -216,8 +216,8 @@ internal static unsafe class Object
 {
 	[DllImport("UE4SS.dll", EntryPoint = "?IsValid@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@@Z")]
 	internal static extern bool IsValid(IntPtr @object);
-	[DllImport("UE4SS.dll", EntryPoint = "?Invoke@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBD@Z")]
-	internal static extern bool Invoke(IntPtr @object, byte[] command);
+	[DllImport("UE4SS.dll", EntryPoint = "?Invoke@Object@Framework@DotNetLibrary@RC@@SAXPEAVUObject@Unreal@4@PEAVUFunction@64@PEAX@Z")]
+	internal static extern bool Invoke(IntPtr @object, IntPtr function, IntPtr @params);
 	[DllImport("UE4SS.dll", EntryPoint = "?Find@Object@Framework@DotNetLibrary@RC@@SAPEAVUObject@Unreal@4@PEBD@Z")]
 	internal static extern IntPtr Find(byte[] name);
 	[DllImport("UE4SS.dll", EntryPoint = "?GetName@Object@Framework@DotNetLibrary@RC@@SAXPEAVUObject@Unreal@4@PEAD@Z")]
@@ -242,6 +242,8 @@ internal static unsafe class Object
 	internal static extern void HasAnyInternalFlags(IntPtr @object, int flags);
 	[DllImport("UE4SS.dll", EntryPoint = "?GetObjectReference@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDPEAPEAV564@@Z")]
 	internal static extern bool GetObjectReference(IntPtr @object, byte[] name, ref IntPtr value);
+	[DllImport("UE4SS.dll", EntryPoint = "?GetFunction@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDPEAPEAVUFunction@64@@Z")]
+	internal static extern bool GetFunction(IntPtr @object, byte[] name, ref IntPtr value);
 	[DllImport("UE4SS.dll", EntryPoint = "?GetBool@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDPEA_N@Z")]
 	internal static extern bool GetBool(IntPtr @object, byte[] name, ref bool value);
 	[DllImport("UE4SS.dll", EntryPoint = "?GetByte@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDPEAE@Z")]
