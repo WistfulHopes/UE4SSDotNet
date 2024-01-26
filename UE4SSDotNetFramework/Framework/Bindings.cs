@@ -39,7 +39,7 @@ internal static class Shared
 			foreach (Type type in types) {
 				MethodInfo[] methods = type.GetMethods();
 
-				if (type.Name == "Main" && type.IsPublic) {
+				if ((type.Name == "Main" || type.Name == "Core") && type.IsPublic) {
 					foreach (MethodInfo method in methods) {
 						if (method.IsPublic && method.IsStatic && !method.IsGenericMethod) {
 							ParameterInfo[] parameterInfos = method.GetParameters();
@@ -215,9 +215,10 @@ static partial class Hooking
 {
 	[DllImport("UE4SS.dll", EntryPoint = "?SigScan@Hooking@Framework@DotNetLibrary@RC@@SA_JPEBD@Z")]
 	private static extern IntPtr SigScan(byte[] signature);
-
 	[DllImport("UE4SS.dll", EntryPoint = "?Hook@Hooking@Framework@DotNetLibrary@RC@@SAPEAVx64Detour@PLH@@_K0PEA_K@Z")]
 	private static extern IntPtr HookInternal(IntPtr address, IntPtr hook, ref IntPtr original);
+	[DllImport("UE4SS.dll", EntryPoint = "?Unhook@Hooking@Framework@DotNetLibrary@RC@@SAXPEAVx64Detour@PLH@@@Z")]
+	private static extern void UnhookInternal(IntPtr hook);
 }
 
 internal static class Object

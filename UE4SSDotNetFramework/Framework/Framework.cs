@@ -177,6 +177,11 @@ namespace UE4SSDotNetFramework.Framework
 		{
 			return HookInternal(address, hook, ref original);
 		}
+		
+		public static void Unhook(IntPtr hook)
+		{
+			UnhookInternal(hook);
+		}
 	}
 
 	/// <summary>

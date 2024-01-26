@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
@@ -116,7 +117,7 @@ internal unsafe struct Command {
 internal sealed class Plugin {
 	internal PluginLoader loader;
 	internal Assembly assembly;
-	internal Dictionary<int, IntPtr> userFunctions;
+	internal List<Dictionary<int, IntPtr>> userFunctions;
 }
 
 internal sealed class AssembliesContextManager {
@@ -133,15 +134,56 @@ internal sealed class AssembliesContextManager {
 	internal void UnloadAssembliesContext() => assembliesContext?.Unload();
 }
 
-internal static unsafe class Core
+public static unsafe class Core
 {
 	private static AssembliesContextManager assembliesContextManager;
 	private static WeakReference assembliesContextWeakReference;
-	private static Plugin plugin;
+	private static List<Plugin> plugins;
 	private static IntPtr sharedEvents;
+	private static List<IntPtr> userEvents;
 	
 	private static delegate* unmanaged[Cdecl]<LogLevel, string, void> Log;
 
+	public static void StartMod()
+	{
+		foreach (var userEvent in userEvents)
+        {
+            if (((IntPtr*)userEvent)[0] is not 0) ((delegate* unmanaged[Cdecl]<void>)((IntPtr*)userEvent)[0])();
+        }
+	}
+
+    public static void StopMod()
+	{
+		foreach (var userEvent in userEvents)
+        {
+            if (((IntPtr*)userEvent)[1] is not 0) ((delegate* unmanaged[Cdecl]<void>)((IntPtr*)userEvent)[1])();
+        }
+	}
+
+    public static void ProgramStart()
+	{
+		foreach (var userEvent in userEvents)
+		{
+            if (((IntPtr*)userEvent)[2] is not 0) ((delegate* unmanaged[Cdecl]<void>)((IntPtr*)userEvent)[2])();
+        }
+    }
+
+    public static void UnrealInit()
+	{
+		foreach (var userEvent in userEvents)
+		{
+            if (((IntPtr*)userEvent)[3] is not 0) ((delegate* unmanaged[Cdecl]<void>)((IntPtr*)userEvent)[3])();
+		}
+	}
+
+    public static void Update()
+	{
+		foreach (var userEvent in userEvents)
+		{
+			if (((IntPtr*)userEvent)[4] is not 0) ((delegate* unmanaged[Cdecl]<void>)((IntPtr*)userEvent)[4])();
+		}
+	}
+	
 	[UnmanagedCallersOnly]
 	internal static IntPtr ManagedCommand(Command command)
 	{
@@ -221,27 +263,6 @@ internal static unsafe class Core
 			return default;
 		}
 
-		if (command.type == CommandType.Find)
-		{
-			IntPtr function = IntPtr.Zero;
-
-			try
-			{
-				string method = Marshal.PtrToStringAnsi(command.method);
-
-				if (!plugin.userFunctions.TryGetValue(method.GetHashCode(StringComparison.Ordinal), out function) &&
-				    command.optional != 1)
-					Log(LogLevel.Error, "Managed function was not found \"" + method + "\"");
-			}
-
-			catch (Exception exception)
-			{
-				Log(LogLevel.Error, exception.ToString());
-			}
-
-			return function;
-		}
-
 		if (command.type == CommandType.Initialize)
 		{
 			try
@@ -257,10 +278,10 @@ internal static unsafe class Core
 					int head = 0;
 					IntPtr* runtimeFunctions = (IntPtr*)buffer[position++];
 
-					Log = (delegate* unmanaged[Cdecl]<LogLevel, string, void>)runtimeFunctions[head++];
+					Log = (delegate* unmanaged[Cdecl]<LogLevel, string, void>)runtimeFunctions[head];
 				}
 
-				sharedEvents = buffer[position++];
+				sharedEvents = buffer[position];
 			}
 
 			catch (Exception exception)
@@ -275,6 +296,8 @@ internal static unsafe class Core
 		{
 			try
 			{
+				userEvents = new List<IntPtr>();
+				plugins = new List<Plugin>();
 				const string frameworkAssemblyName = "UE4SSDotNetFramework";
 				string assemblyPath = Assembly.GetExecutingAssembly().Location;
 				string managedFolder =
@@ -307,43 +330,49 @@ internal static unsafe class Core
 
 						if (name?.Name != frameworkAssemblyName)
 						{
-							plugin = new();
-							plugin.loader = PluginLoader.CreateFromAssemblyFile(assembly, config =>
+							var curPlugin = new Plugin();
+							curPlugin.loader = PluginLoader.CreateFromAssemblyFile(assembly, config =>
 							{
 								config.DefaultContext = assembliesContextManager.assembliesContext;
 								config.IsUnloadable = true;
 								config.LoadInMemory = true;
 							});
-							plugin.assembly = plugin.loader.LoadAssemblyFromPath(assembly);
+							curPlugin.assembly = curPlugin.loader.LoadAssemblyFromPath(assembly);
+							curPlugin.userFunctions = new List<Dictionary<int, IntPtr>>();
 
-							AssemblyName[] referencedAssemblies = plugin.assembly.GetReferencedAssemblies();
+							AssemblyName[] referencedAssemblies = curPlugin.assembly.GetReferencedAssemblies();
 
 							foreach (AssemblyName referencedAssembly in referencedAssemblies)
 							{
 								if (referencedAssembly.Name == frameworkAssemblyName)
 								{
-									Assembly framework = plugin.loader.LoadAssembly(referencedAssembly);
+									Assembly framework = curPlugin.loader.LoadAssembly(referencedAssembly);
 
 									using (assembliesContextManager.assembliesContext.EnterContextualReflection())
 									{
 										Type sharedClass = framework.GetType(frameworkAssemblyName + ".Framework" + ".Shared");
 
-										plugin.userFunctions = (Dictionary<int, IntPtr>)sharedClass
+										IntPtr events = Marshal.AllocHGlobal(sizeof(IntPtr) * 5);
+										Unsafe.InitBlockUnaligned((byte*)events, 0, (uint)(sizeof(IntPtr) * 5));
+
+                                        curPlugin.userFunctions.Add((Dictionary<int, IntPtr>)sharedClass
 											.GetMethod("Load", BindingFlags.NonPublic | BindingFlags.Static)
 											.Invoke(null,
-												new object[] { sharedEvents, plugin.assembly });
+												new object[] { events, curPlugin.assembly }));
+                                        
+										userEvents.Add(events);
+
+                                        sharedClass
+											.GetMethod("Load", BindingFlags.NonPublic | BindingFlags.Static)
+											.Invoke(null,
+												new object[] { sharedEvents, Assembly.GetExecutingAssembly() });
+
+										plugins.Add(curPlugin);
 
 										Log(LogLevel.Default, "Framework loaded succesfuly for " + assembly);
-
-										return default;
 									}
 								}
 							}
-
-							UnloadAssemblies();
-
-							if (loadingFailed)
-								return default;
 						}
 					}
 				}
@@ -369,8 +398,12 @@ internal static unsafe class Core
 	{
 		try
 		{
-			plugin?.loader.Dispose();
-			plugin = null;
+			foreach (var plugin in plugins)
+			{
+				plugin.loader.Dispose();
+			}
+			
+			plugins.Clear();
 
 			assembliesContextManager.UnloadAssembliesContext();
 			assembliesContextManager = null;
