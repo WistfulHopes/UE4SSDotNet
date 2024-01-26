@@ -155,6 +155,8 @@ namespace UE4SSDotNetFramework.Framework
 	[StructLayout(LayoutKind.Sequential)]
 	public unsafe struct ObjectReference : IEquatable<ObjectReference> {
 		private IntPtr pointer;
+		
+		internal ObjectReference(IntPtr pointer) => Pointer = pointer;
 
 		internal IntPtr Pointer {
 			get {
@@ -200,6 +202,342 @@ namespace UE4SSDotNetFramework.Framework
 			}
 		}
 
+		/// <summary>
+		/// Finds an object by name
+		/// </summary>
+		/// <returns>An object or <c>null</c> on failure</returns>
+		public static ObjectReference? Find(string name)
+		{
+			if (name == null)
+				throw new ArgumentNullException(nameof(name));
+
+			IntPtr pointer = Object.find(name.StringToBytes());
+
+			if (pointer != IntPtr.Zero)
+				return new(pointer);
+
+			return null;
+		}
+		
+		/// <summary>
+		/// Invokes a command, function, or an event with optional arguments
+		/// </summary>
+		public bool Invoke(string command) => Object.invoke(Pointer, command.StringToBytes());
+
+		/// <summary>
+		/// Retrieves the value of the bool property
+		/// </summary>
+		public bool GetBool(string name, ref bool value) {
+			if (name == null)
+				throw new ArgumentNullException(nameof(name));
+
+			return Object.getBool(Pointer, name.StringToBytes(), ref value);
+		}
+
+		/// <summary>
+		/// Retrieves the value of the byte property
+		/// </summary>
+		/// <returns><c>true</c> on success</returns>
+		public bool GetByte(string name, ref byte value) {
+			if (name == null)
+				throw new ArgumentNullException(nameof(name));
+
+			return Object.getByte(Pointer, name.StringToBytes(), ref value);
+		}
+
+		/// <summary>
+		/// Retrieves the value of the short property
+		/// </summary>
+		/// <returns><c>true</c> on success</returns>
+		public bool GetShort(string name, ref short value) {
+			if (name == null)
+				throw new ArgumentNullException(nameof(name));
+
+			return Object.getShort(Pointer, name.StringToBytes(), ref value);
+		}
+
+		/// <summary>
+		/// Retrieves the value of the integer property
+		/// </summary>
+		/// <returns><c>true</c> on success</returns>
+		public bool GetInt(string name, ref int value) {
+			if (name == null)
+				throw new ArgumentNullException(nameof(name));
+
+			return Object.getInt(Pointer, name.StringToBytes(), ref value);
+		}
+
+		/// <summary>
+		/// Retrieves the value of the long property
+		/// </summary>
+		/// <returns><c>true</c> on success</returns>
+		public bool GetLong(string name, ref long value) {
+			if (name == null)
+				throw new ArgumentNullException(nameof(name));
+
+			return Object.getLong(Pointer, name.StringToBytes(), ref value);
+		}
+
+		/// <summary>
+		/// Retrieves the value of the unsigned short property
+		/// </summary>
+		/// <returns><c>true</c> on success</returns>
+		public bool GetUShort(string name, ref ushort value) {
+			if (name == null)
+				throw new ArgumentNullException(nameof(name));
+
+			return Object.getUShort(Pointer, name.StringToBytes(), ref value);
+		}
+
+		/// <summary>
+		/// Retrieves the value of the unsigned integer property
+		/// </summary>
+		/// <returns><c>true</c> on success</returns>
+		public bool GetUInt(string name, ref uint value) {
+			if (name == null)
+				throw new ArgumentNullException(nameof(name));
+
+			return Object.getUInt(Pointer, name.StringToBytes(), ref value);
+		}
+
+		/// <summary>
+		/// Retrieves the value of the unsigned long property
+		/// </summary>
+		/// <returns><c>true</c> on success</returns>
+		public bool GetULong(string name, ref ulong value) {
+			if (name == null)
+				throw new ArgumentNullException(nameof(name));
+
+			return Object.getULong(Pointer, name.StringToBytes(), ref value);
+		}
+
+		/// <summary>
+		/// Retrieves the value of the float property
+		/// </summary>
+		/// <returns><c>true</c> on success</returns>
+		public bool GetFloat(string name, ref float value) {
+			if (name == null)
+				throw new ArgumentNullException(nameof(name));
+
+			return Object.getFloat(Pointer, name.StringToBytes(), ref value);
+		}
+
+		/// <summary>
+		/// Retrieves the value of the double property
+		/// </summary>
+		/// <returns><c>true</c> on success</returns>
+		public bool GetDouble(string name, ref double value) {
+			if (name == null)
+				throw new ArgumentNullException(nameof(name));
+
+			return Object.getDouble(Pointer, name.StringToBytes(), ref value);
+		}
+
+		/// <summary>
+		/// Retrieves the value of the enum property
+		/// </summary>
+		/// <returns><c>true</c> on success</returns>
+		public bool GetEnum<T>(string name, ref T value) where T : Enum {
+			if (name == null)
+				throw new ArgumentNullException(nameof(name));
+
+			int data = 0;
+
+			if (Object.getEnum(Pointer, name.StringToBytes(), ref data)) {
+				value = (T)Enum.ToObject(typeof(T), data);
+
+				return true;
+			}
+
+			return false;
+		}
+
+		/// <summary>
+		/// Retrieves the value of the string property
+		/// </summary>
+		/// <returns><c>true</c> on success</returns>
+		public bool GetString(string name, ref string value) {
+			if (name == null)
+				throw new ArgumentNullException(nameof(name));
+
+			byte[] stringBuffer = ArrayPool.GetStringBuffer();
+
+			if (Object.getString(Pointer, name.StringToBytes(), stringBuffer)) {
+				value = stringBuffer.BytesToString();
+
+				return true;
+			}
+
+			return false;
+		}
+
+		/// <summary>
+		/// Retrieves the value of the text property
+		/// </summary>
+		/// <returns><c>true</c> on success</returns>
+		public bool GetText(string name, ref string value) {
+			if (name == null)
+				throw new ArgumentNullException(nameof(name));
+
+			byte[] stringBuffer = ArrayPool.GetStringBuffer();
+
+			if (Object.getText(Pointer, name.StringToBytes(), stringBuffer)) {
+				value = stringBuffer.BytesToString();
+
+				return true;
+			}
+
+			return false;
+		}
+
+		/// <summary>
+		/// Sets the value of the bool property
+		/// </summary>
+		public bool SetBool(string name, bool value) {
+			if (name == null)
+				throw new ArgumentNullException(nameof(name));
+
+			return Object.setBool(Pointer, name.StringToBytes(), value);
+		}
+
+		/// <summary>
+		/// Sets the value of the byte property
+		/// </summary>
+		/// <returns><c>true</c> on success</returns>
+		public bool SetByte(string name, byte value) {
+			if (name == null)
+				throw new ArgumentNullException(nameof(name));
+
+			return Object.setByte(Pointer, name.StringToBytes(), value);
+		}
+
+		/// <summary>
+		/// Sets the value of the short property
+		/// </summary>
+		/// <returns><c>true</c> on success</returns>
+		public bool SetShort(string name, short value) {
+			if (name == null)
+				throw new ArgumentNullException(nameof(name));
+
+			return Object.setShort(Pointer, name.StringToBytes(), value);
+		}
+
+		/// <summary>
+		/// Sets the value of the integer property
+		/// </summary>
+		/// <returns><c>true</c> on success</returns>
+		public bool SetInt(string name, int value) {
+			if (name == null)
+				throw new ArgumentNullException(nameof(name));
+
+			return Object.setInt(Pointer, name.StringToBytes(), value);
+		}
+
+		/// <summary>
+		/// Sets the value of the long property
+		/// </summary>
+		/// <returns><c>true</c> on success</returns>
+		public bool SetLong(string name, long value) {
+			if (name == null)
+				throw new ArgumentNullException(nameof(name));
+
+			return Object.setLong(Pointer, name.StringToBytes(), value);
+		}
+
+		/// <summary>
+		/// Sets the value of the unsigned short property
+		/// </summary>
+		/// <returns><c>true</c> on success</returns>
+		public bool SetUShort(string name, ushort value) {
+			if (name == null)
+				throw new ArgumentNullException(nameof(name));
+
+			return Object.setUShort(Pointer, name.StringToBytes(), value);
+		}
+
+		/// <summary>
+		/// Sets the value of the unsigned integer property
+		/// </summary>
+		/// <returns><c>true</c> on success</returns>
+		public bool SetUInt(string name, uint value) {
+			if (name == null)
+				throw new ArgumentNullException(nameof(name));
+
+			return Object.setUInt(Pointer, name.StringToBytes(), value);
+		}
+
+		/// <summary>
+		/// Sets the value of the unsigned long property
+		/// </summary>
+		/// <returns><c>true</c> on success</returns>
+		public bool SetULong(string name, ulong value) {
+			if (name == null)
+				throw new ArgumentNullException(nameof(name));
+
+			return Object.setULong(Pointer, name.StringToBytes(), value);
+		}
+
+		/// <summary>
+		/// Sets the value of the float property
+		/// </summary>
+		/// <returns><c>true</c> on success</returns>
+		public bool SetFloat(string name, float value) {
+			if (name == null)
+				throw new ArgumentNullException(nameof(name));
+
+			return Object.setFloat(Pointer, name.StringToBytes(), value);
+		}
+
+		/// <summary>
+		/// Sets the value of the double property
+		/// </summary>
+		/// <returns><c>true</c> on success</returns>
+		public bool SetDouble(string name, double value) {
+			if (name == null)
+				throw new ArgumentNullException(nameof(name));
+
+			return Object.setDouble(Pointer, name.StringToBytes(), value);
+		}
+
+		/// <summary>
+		/// Sets the value of the enum property
+		/// </summary>
+		/// <returns><c>true</c> on success</returns>
+		public bool SetEnum<T>(string name, T value) where T : Enum {
+			if (name == null)
+				throw new ArgumentNullException(nameof(name));
+
+			return Object.setEnum(Pointer, name.StringToBytes(), Convert.ToInt32(value));
+		}
+
+		/// <summary>
+		/// Sets the value of the string property
+		/// </summary>
+		/// <returns><c>true</c> on success</returns>
+		public bool SetString(string name, string value) {
+			if (name == null)
+				throw new ArgumentNullException(nameof(name));
+
+			if (value == null)
+				throw new ArgumentNullException(nameof(value));
+
+			return Object.setString(Pointer, name.StringToBytes(), value.StringToBytes());
+		}
+
+		/// <summary>
+		/// Sets the value of the text property
+		/// </summary>
+		/// <returns><c>true</c> on success</returns>
+		public bool SetText(string name, string value) {
+			if (name == null)
+				throw new ArgumentNullException(nameof(name));
+
+			if (value == null)
+				throw new ArgumentNullException(nameof(value));
+
+			return Object.setText(Pointer, name.StringToBytes(), value.StringToBytes());
+		}
+		
 		/// <summary>
 		/// Indicates equality of objects
 		/// </summary>

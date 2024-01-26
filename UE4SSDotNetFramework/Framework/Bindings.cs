@@ -51,8 +51,9 @@ internal static class Shared
 
 			Object.isValid = (delegate* unmanaged[Cdecl]<IntPtr, bool>)objectFunctions[head++];
 			Object.invoke = (delegate* unmanaged[Cdecl]<IntPtr, byte[], bool>)objectFunctions[head++];
+			Object.find = (delegate* unmanaged[Cdecl]<byte[], IntPtr>)objectFunctions[head++];
 			Object.getName = (delegate* unmanaged[Cdecl]<IntPtr, byte[], void>)objectFunctions[head++];
-			Object.getbool = (delegate* unmanaged[Cdecl]<IntPtr, byte[], ref bool, bool>)objectFunctions[head++];
+			Object.getBool = (delegate* unmanaged[Cdecl]<IntPtr, byte[], ref bool, bool>)objectFunctions[head++];
 			Object.getByte = (delegate* unmanaged[Cdecl]<IntPtr, byte[], ref byte, bool>)objectFunctions[head++];
 			Object.getShort = (delegate* unmanaged[Cdecl]<IntPtr, byte[], ref short, bool>)objectFunctions[head++];
 			Object.getInt = (delegate* unmanaged[Cdecl]<IntPtr, byte[], ref int, bool>)objectFunctions[head++];
@@ -67,7 +68,7 @@ internal static class Shared
 			Object.getEnum = (delegate* unmanaged[Cdecl]<IntPtr, byte[], ref int, bool>)objectFunctions[head++];
 			Object.getString = (delegate* unmanaged[Cdecl]<IntPtr, byte[], byte[], bool>)objectFunctions[head++];
 			Object.getText = (delegate* unmanaged[Cdecl]<IntPtr, byte[], byte[], bool>)objectFunctions[head++];
-			Object.setbool = (delegate* unmanaged[Cdecl]<IntPtr, byte[], bool, bool>)objectFunctions[head++];
+			Object.setBool = (delegate* unmanaged[Cdecl]<IntPtr, byte[], bool, bool>)objectFunctions[head++];
 			Object.setByte = (delegate* unmanaged[Cdecl]<IntPtr, byte[], byte, bool>)objectFunctions[head++];
 			Object.setShort = (delegate* unmanaged[Cdecl]<IntPtr, byte[], short, bool>)objectFunctions[head++];
 			Object.setInt = (delegate* unmanaged[Cdecl]<IntPtr, byte[], int, bool>)objectFunctions[head++];
@@ -105,6 +106,33 @@ internal static class Shared
 								if (method.Name == "StopMod") {
 									if (parameterInfos.Length == 0)
 										events[1] = GetFunctionPointer(method);
+									else
+										throw new ArgumentException(method.Name + " should not have arguments");
+
+									continue;
+								}
+								
+								if (method.Name == "ProgramStart") {
+									if (parameterInfos.Length == 0)
+										events[2] = GetFunctionPointer(method);
+									else
+										throw new ArgumentException(method.Name + " should not have arguments");
+
+									continue;
+								}
+								
+								if (method.Name == "UnrealInit") {
+									if (parameterInfos.Length == 0)
+										events[3] = GetFunctionPointer(method);
+									else
+										throw new ArgumentException(method.Name + " should not have arguments");
+
+									continue;
+								}
+								
+								if (method.Name == "Update") {
+									if (parameterInfos.Length == 0)
+										events[4] = GetFunctionPointer(method);
 									else
 										throw new ArgumentException(method.Name + " should not have arguments");
 								}
@@ -193,8 +221,9 @@ static unsafe partial class Debug {
 internal static unsafe class Object {
 	internal static delegate* unmanaged[Cdecl]<IntPtr, bool> isValid;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], bool> invoke;
+	internal static delegate* unmanaged[Cdecl]<byte[], IntPtr> find;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], void> getName;
-	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], ref bool, bool> getbool;
+	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], ref bool, bool> getBool;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], ref byte, bool> getByte;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], ref short, bool> getShort;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], ref int, bool> getInt;
@@ -207,7 +236,7 @@ internal static unsafe class Object {
 	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], ref int, bool> getEnum;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], byte[], bool> getString;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], byte[], bool> getText;
-	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], bool, bool> setbool;
+	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], bool, bool> setBool;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], byte, bool> setByte;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], short, bool> setShort;
 	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], int, bool> setInt;
