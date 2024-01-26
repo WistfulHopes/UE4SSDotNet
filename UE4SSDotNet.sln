@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UE4SSDotNetRuntime", "UE4SSDotNetRuntime\UE4SSDotNetRuntime.csproj", "{0394DF5D-DB65-4067-AD5F-00055408CD0D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UE4SSDotNetFramework", "UE4SSDotNetFramework\UE4SSDotNetFramework.csproj", "{56FC4D72-D4BD-4E21-80BA-093D55F32CDB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0394DF5D-DB65-4067-AD5F-00055408CD0D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0394DF5D-DB65-4067-AD5F-00055408CD0D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0394DF5D-DB65-4067-AD5F-00055408CD0D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0394DF5D-DB65-4067-AD5F-00055408CD0D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{56FC4D72-D4BD-4E21-80BA-093D55F32CDB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{56FC4D72-D4BD-4E21-80BA-093D55F32CDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{56FC4D72-D4BD-4E21-80BA-093D55F32CDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{56FC4D72-D4BD-4E21-80BA-093D55F32CDB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
