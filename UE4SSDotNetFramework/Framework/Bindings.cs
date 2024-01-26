@@ -2,7 +2,6 @@
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using UE4SSDotNetFramework.Framework;
 
 namespace UE4SSDotNetFramework.Framework;
 
@@ -190,7 +189,7 @@ internal enum PropertyType
 	SoftClassProperty,
 	InterfaceProperty,
 	Invalid,
-};
+}
 
 [StructLayout(LayoutKind.Sequential)]
 partial struct UnArray
@@ -207,12 +206,21 @@ partial struct WeakObjectPtr
 	private int ObjectSerialNumber;
 }
 
-static unsafe partial class Debug {
+static partial class Debug {
 	[DllImport("UE4SS.dll", EntryPoint = "?Log@Debug@Framework@DotNetLibrary@RC@@SAXW4LogLevel@54@PEBD@Z")]
-	internal static extern void Log(LogLevel level, byte[] message);
+	private static extern void Log(LogLevel level, byte[] message);
 }
 
-internal static unsafe class Object
+static partial class Hooking
+{
+	[DllImport("UE4SS.dll", EntryPoint = "?SigScan@Hooking@Framework@DotNetLibrary@RC@@SA_JPEBD@Z")]
+	private static extern IntPtr SigScan(byte[] signature);
+
+	[DllImport("UE4SS.dll", EntryPoint = "?Hook@Hooking@Framework@DotNetLibrary@RC@@SAPEAVx64Detour@PLH@@_K0PEA_K@Z")]
+	private static extern IntPtr HookInternal(IntPtr address, IntPtr hook, ref IntPtr original);
+}
+
+internal static class Object
 {
 	[DllImport("UE4SS.dll", EntryPoint = "?IsValid@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@@Z")]
 	internal static extern bool IsValid(IntPtr @object);
@@ -320,7 +328,7 @@ internal static unsafe class Struct
 	internal static extern bool ForEachProperty(IntPtr @struct, delegate* unmanaged[Cdecl]<IntPtr, void> callback);
 }
 
-internal static unsafe class Class
+internal static class Class
 {
 	[DllImport("UE4SS.dll", EntryPoint = "?GetCDO@Class@Framework@DotNetLibrary@RC@@CAXPEAVUClass@Unreal@4@PEAPEAVUObject@64@@Z")]
 	internal static extern void GetCDO(IntPtr @class, ref IntPtr cdo);

@@ -148,7 +148,7 @@ namespace UE4SSDotNetFramework.Framework
 	/// <summary>
 	/// Functionality for debugging
 	/// </summary>
-	public static unsafe partial class Debug
+	public static partial class Debug
 	{
 		[ThreadStatic] private static StringBuilder stringBuffer = new(8192);
 
@@ -163,12 +163,27 @@ namespace UE4SSDotNetFramework.Framework
 			Log(level, message.StringToBytes());
 		}
 	}
+	
+	public static partial class Hooking
+	{
+		private static IntPtr _baseAddress;
+
+		public static IntPtr SigScan(string signature)
+		{
+			return SigScan(signature.StringToBytes());
+		}
+		
+		public static IntPtr Hook(IntPtr address, IntPtr hook, ref IntPtr original)
+		{
+			return HookInternal(address, hook, ref original);
+		}
+	}
 
 	/// <summary>
 	/// A representation of the engine's object reference
 	/// </summary>
 	[StructLayout(LayoutKind.Sequential)]
-	public unsafe class ObjectReference : IEquatable<ObjectReference> {
+	public class ObjectReference : IEquatable<ObjectReference> {
 		private IntPtr pointer;
 		
 		internal ObjectReference(IntPtr pointer) => Pointer = pointer;
