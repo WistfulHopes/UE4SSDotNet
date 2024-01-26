@@ -145,7 +145,7 @@ namespace UE4SSDotNetFramework.Framework
 			if (message == null)
 				throw new ArgumentNullException(nameof(message));
 
-			log(level, message.StringToBytes());
+			Log(level, message.StringToBytes());
 		}
 	}
 
@@ -187,7 +187,7 @@ namespace UE4SSDotNetFramework.Framework
 		/// <summary>
 		/// Returns <c>true</c> if the object is created
 		/// </summary>
-		public bool IsCreated => pointer != IntPtr.Zero && Object.isValid(pointer);
+		public bool IsCreated => pointer != IntPtr.Zero && Object.IsValid(pointer);
 
 		/// <summary>
 		/// Returns the name of the object
@@ -196,7 +196,7 @@ namespace UE4SSDotNetFramework.Framework
 			get {
 				byte[] stringBuffer = ArrayPool.GetStringBuffer();
 
-				Object.getName(Pointer, stringBuffer);
+				Object.GetName(Pointer, stringBuffer);
 
 				return stringBuffer.BytesToString();
 			}
@@ -211,7 +211,7 @@ namespace UE4SSDotNetFramework.Framework
 			if (name == null)
 				throw new ArgumentNullException(nameof(name));
 
-			IntPtr pointer = Object.find(name.StringToBytes());
+			IntPtr pointer = Object.Find(name.StringToBytes());
 
 			if (pointer != IntPtr.Zero)
 				return new(pointer);
@@ -222,7 +222,7 @@ namespace UE4SSDotNetFramework.Framework
 		/// <summary>
 		/// Invokes a command, function, or an event with optional arguments
 		/// </summary>
-		public bool Invoke(string command) => Object.invoke(Pointer, command.StringToBytes());
+		public bool Invoke(string command) => Object.Invoke(Pointer, command.StringToBytes());
 
 		/// <summary>
 		/// Retrieves the value of the bool property
@@ -231,7 +231,7 @@ namespace UE4SSDotNetFramework.Framework
 			if (name == null)
 				throw new ArgumentNullException(nameof(name));
 
-			return Object.getBool(Pointer, name.StringToBytes(), ref value);
+			return Object.GetBool(Pointer, name.StringToBytes(), ref value);
 		}
 
 		/// <summary>
@@ -242,7 +242,7 @@ namespace UE4SSDotNetFramework.Framework
 			if (name == null)
 				throw new ArgumentNullException(nameof(name));
 
-			return Object.getByte(Pointer, name.StringToBytes(), ref value);
+			return Object.GetByte(Pointer, name.StringToBytes(), ref value);
 		}
 
 		/// <summary>
@@ -253,7 +253,7 @@ namespace UE4SSDotNetFramework.Framework
 			if (name == null)
 				throw new ArgumentNullException(nameof(name));
 
-			return Object.getShort(Pointer, name.StringToBytes(), ref value);
+			return Object.GetShort(Pointer, name.StringToBytes(), ref value);
 		}
 
 		/// <summary>
@@ -264,7 +264,7 @@ namespace UE4SSDotNetFramework.Framework
 			if (name == null)
 				throw new ArgumentNullException(nameof(name));
 
-			return Object.getInt(Pointer, name.StringToBytes(), ref value);
+			return Object.GetInt(Pointer, name.StringToBytes(), ref value);
 		}
 
 		/// <summary>
@@ -275,7 +275,7 @@ namespace UE4SSDotNetFramework.Framework
 			if (name == null)
 				throw new ArgumentNullException(nameof(name));
 
-			return Object.getLong(Pointer, name.StringToBytes(), ref value);
+			return Object.GetLong(Pointer, name.StringToBytes(), ref value);
 		}
 
 		/// <summary>
@@ -286,7 +286,7 @@ namespace UE4SSDotNetFramework.Framework
 			if (name == null)
 				throw new ArgumentNullException(nameof(name));
 
-			return Object.getUShort(Pointer, name.StringToBytes(), ref value);
+			return Object.GetUShort(Pointer, name.StringToBytes(), ref value);
 		}
 
 		/// <summary>
@@ -297,7 +297,7 @@ namespace UE4SSDotNetFramework.Framework
 			if (name == null)
 				throw new ArgumentNullException(nameof(name));
 
-			return Object.getUInt(Pointer, name.StringToBytes(), ref value);
+			return Object.GetUInt(Pointer, name.StringToBytes(), ref value);
 		}
 
 		/// <summary>
@@ -308,7 +308,7 @@ namespace UE4SSDotNetFramework.Framework
 			if (name == null)
 				throw new ArgumentNullException(nameof(name));
 
-			return Object.getULong(Pointer, name.StringToBytes(), ref value);
+			return Object.GetULong(Pointer, name.StringToBytes(), ref value);
 		}
 
 		/// <summary>
@@ -319,7 +319,7 @@ namespace UE4SSDotNetFramework.Framework
 			if (name == null)
 				throw new ArgumentNullException(nameof(name));
 
-			return Object.getFloat(Pointer, name.StringToBytes(), ref value);
+			return Object.GetFloat(Pointer, name.StringToBytes(), ref value);
 		}
 
 		/// <summary>
@@ -330,7 +330,7 @@ namespace UE4SSDotNetFramework.Framework
 			if (name == null)
 				throw new ArgumentNullException(nameof(name));
 
-			return Object.getDouble(Pointer, name.StringToBytes(), ref value);
+			return Object.GetDouble(Pointer, name.StringToBytes(), ref value);
 		}
 
 		/// <summary>
@@ -343,7 +343,7 @@ namespace UE4SSDotNetFramework.Framework
 
 			int data = 0;
 
-			if (Object.getEnum(Pointer, name.StringToBytes(), ref data)) {
+			if (Object.GetEnum(Pointer, name.StringToBytes(), ref data)) {
 				value = (T)Enum.ToObject(typeof(T), data);
 
 				return true;
@@ -362,7 +362,7 @@ namespace UE4SSDotNetFramework.Framework
 
 			byte[] stringBuffer = ArrayPool.GetStringBuffer();
 
-			if (Object.getString(Pointer, name.StringToBytes(), stringBuffer)) {
+			if (Object.GetString(Pointer, name.StringToBytes(), stringBuffer)) {
 				value = stringBuffer.BytesToString();
 
 				return true;
@@ -381,7 +381,7 @@ namespace UE4SSDotNetFramework.Framework
 
 			byte[] stringBuffer = ArrayPool.GetStringBuffer();
 
-			if (Object.getText(Pointer, name.StringToBytes(), stringBuffer)) {
+			if (Object.GetText(Pointer, name.StringToBytes(), stringBuffer)) {
 				value = stringBuffer.BytesToString();
 
 				return true;
@@ -397,7 +397,7 @@ namespace UE4SSDotNetFramework.Framework
 			if (name == null)
 				throw new ArgumentNullException(nameof(name));
 
-			return Object.setBool(Pointer, name.StringToBytes(), value);
+			return Object.SetBool(Pointer, name.StringToBytes(), value);
 		}
 
 		/// <summary>
@@ -408,7 +408,7 @@ namespace UE4SSDotNetFramework.Framework
 			if (name == null)
 				throw new ArgumentNullException(nameof(name));
 
-			return Object.setByte(Pointer, name.StringToBytes(), value);
+			return Object.SetByte(Pointer, name.StringToBytes(), value);
 		}
 
 		/// <summary>
@@ -419,7 +419,7 @@ namespace UE4SSDotNetFramework.Framework
 			if (name == null)
 				throw new ArgumentNullException(nameof(name));
 
-			return Object.setShort(Pointer, name.StringToBytes(), value);
+			return Object.SetShort(Pointer, name.StringToBytes(), value);
 		}
 
 		/// <summary>
@@ -430,7 +430,7 @@ namespace UE4SSDotNetFramework.Framework
 			if (name == null)
 				throw new ArgumentNullException(nameof(name));
 
-			return Object.setInt(Pointer, name.StringToBytes(), value);
+			return Object.SetInt(Pointer, name.StringToBytes(), value);
 		}
 
 		/// <summary>
@@ -441,7 +441,7 @@ namespace UE4SSDotNetFramework.Framework
 			if (name == null)
 				throw new ArgumentNullException(nameof(name));
 
-			return Object.setLong(Pointer, name.StringToBytes(), value);
+			return Object.SetLong(Pointer, name.StringToBytes(), value);
 		}
 
 		/// <summary>
@@ -452,7 +452,7 @@ namespace UE4SSDotNetFramework.Framework
 			if (name == null)
 				throw new ArgumentNullException(nameof(name));
 
-			return Object.setUShort(Pointer, name.StringToBytes(), value);
+			return Object.SetUShort(Pointer, name.StringToBytes(), value);
 		}
 
 		/// <summary>
@@ -463,7 +463,7 @@ namespace UE4SSDotNetFramework.Framework
 			if (name == null)
 				throw new ArgumentNullException(nameof(name));
 
-			return Object.setUInt(Pointer, name.StringToBytes(), value);
+			return Object.SetUInt(Pointer, name.StringToBytes(), value);
 		}
 
 		/// <summary>
@@ -474,7 +474,7 @@ namespace UE4SSDotNetFramework.Framework
 			if (name == null)
 				throw new ArgumentNullException(nameof(name));
 
-			return Object.setULong(Pointer, name.StringToBytes(), value);
+			return Object.SetULong(Pointer, name.StringToBytes(), value);
 		}
 
 		/// <summary>
@@ -485,7 +485,7 @@ namespace UE4SSDotNetFramework.Framework
 			if (name == null)
 				throw new ArgumentNullException(nameof(name));
 
-			return Object.setFloat(Pointer, name.StringToBytes(), value);
+			return Object.SetFloat(Pointer, name.StringToBytes(), value);
 		}
 
 		/// <summary>
@@ -496,7 +496,7 @@ namespace UE4SSDotNetFramework.Framework
 			if (name == null)
 				throw new ArgumentNullException(nameof(name));
 
-			return Object.setDouble(Pointer, name.StringToBytes(), value);
+			return Object.SetDouble(Pointer, name.StringToBytes(), value);
 		}
 
 		/// <summary>
@@ -507,7 +507,7 @@ namespace UE4SSDotNetFramework.Framework
 			if (name == null)
 				throw new ArgumentNullException(nameof(name));
 
-			return Object.setEnum(Pointer, name.StringToBytes(), Convert.ToInt32(value));
+			return Object.SetEnum(Pointer, name.StringToBytes(), Convert.ToInt32(value));
 		}
 
 		/// <summary>
@@ -521,7 +521,7 @@ namespace UE4SSDotNetFramework.Framework
 			if (value == null)
 				throw new ArgumentNullException(nameof(value));
 
-			return Object.setString(Pointer, name.StringToBytes(), value.StringToBytes());
+			return Object.SetString(Pointer, name.StringToBytes(), value.StringToBytes());
 		}
 
 		/// <summary>
@@ -535,7 +535,7 @@ namespace UE4SSDotNetFramework.Framework
 			if (value == null)
 				throw new ArgumentNullException(nameof(value));
 
-			return Object.setText(Pointer, name.StringToBytes(), value.StringToBytes());
+			return Object.SetText(Pointer, name.StringToBytes(), value.StringToBytes());
 		}
 		
 		/// <summary>

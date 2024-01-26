@@ -139,9 +139,7 @@ internal static unsafe class Core
 	private static WeakReference assembliesContextWeakReference;
 	private static Plugin plugin;
 	private static IntPtr sharedEvents;
-	private static IntPtr sharedFunctions;
-	private static int sharedChecksum;
-
+	
 	private static delegate* unmanaged[Cdecl]<LogLevel, string, void> Log;
 
 	[UnmanagedCallersOnly]
@@ -263,8 +261,6 @@ internal static unsafe class Core
 				}
 
 				sharedEvents = buffer[position++];
-				sharedFunctions = buffer[position++];
-				sharedChecksum = command.checksum;
 			}
 
 			catch (Exception exception)
@@ -335,31 +331,11 @@ internal static unsafe class Core
 										plugin.userFunctions = (Dictionary<int, IntPtr>)sharedClass
 											.GetMethod("Load", BindingFlags.NonPublic | BindingFlags.Static)
 											.Invoke(null,
-												new object[] { sharedEvents, sharedFunctions, plugin.assembly });
+												new object[] { sharedEvents, plugin.assembly });
 
 										Log(LogLevel.Default, "Framework loaded succesfuly for " + assembly);
 
 										return default;
-
-										if ((int)sharedClass
-											    .GetField("checksum", BindingFlags.NonPublic | BindingFlags.Static)
-											    .GetValue(null) == sharedChecksum)
-										{
-											plugin.userFunctions = (Dictionary<int, IntPtr>)sharedClass
-												.GetMethod("Load", BindingFlags.NonPublic | BindingFlags.Static)
-												.Invoke(null,
-													new object[] { sharedEvents, sharedFunctions, plugin.assembly });
-
-											Log(LogLevel.Default, "Framework loaded succesfuly for " + assembly);
-
-											return default;
-										}
-
-										Log(LogLevel.Error,
-											"Framework loading failed, version is incompatible with the runtime, please, recompile the project with an updated version referenced in " +
-											assembly);
-
-										loadingFailed = true;
 									}
 								}
 							}

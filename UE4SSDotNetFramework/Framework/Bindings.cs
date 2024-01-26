@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using UE4SSDotNetFramework.Framework;
 
 namespace UE4SSDotNetFramework.Framework;
@@ -31,57 +32,8 @@ internal static class Shared
 	                                                      TypeAttributes.Sealed | TypeAttributes.AnsiClass |
 	                                                      TypeAttributes.AutoClass;
 
-	internal static unsafe Dictionary<int, IntPtr> Load(IntPtr* events, IntPtr functions, Assembly pluginAssembly)
+	internal static unsafe Dictionary<int, IntPtr> Load(IntPtr* events, Assembly pluginAssembly)
 	{
-		int position = 0;
-		IntPtr* buffer = (IntPtr*)functions;
-
-		unchecked
-		{
-			int head = 0;
-			IntPtr* debugFunctions = (IntPtr*)buffer[position++];
-
-			Debug.log = (delegate* unmanaged[Cdecl]<LogLevel, byte[], void>)debugFunctions[head++];
-		}
-
-		unchecked
-		{
-			int head = 0;
-			IntPtr* objectFunctions = (IntPtr*)buffer[position++];
-
-			Object.isValid = (delegate* unmanaged[Cdecl]<IntPtr, bool>)objectFunctions[head++];
-			Object.invoke = (delegate* unmanaged[Cdecl]<IntPtr, byte[], bool>)objectFunctions[head++];
-			Object.find = (delegate* unmanaged[Cdecl]<byte[], IntPtr>)objectFunctions[head++];
-			Object.getName = (delegate* unmanaged[Cdecl]<IntPtr, byte[], void>)objectFunctions[head++];
-			Object.getBool = (delegate* unmanaged[Cdecl]<IntPtr, byte[], ref bool, bool>)objectFunctions[head++];
-			Object.getByte = (delegate* unmanaged[Cdecl]<IntPtr, byte[], ref byte, bool>)objectFunctions[head++];
-			Object.getShort = (delegate* unmanaged[Cdecl]<IntPtr, byte[], ref short, bool>)objectFunctions[head++];
-			Object.getInt = (delegate* unmanaged[Cdecl]<IntPtr, byte[], ref int, bool>)objectFunctions[head++];
-			Object.getLong = (delegate* unmanaged[Cdecl]<IntPtr, byte[], ref long, bool>)objectFunctions[head++];
-			Object.getUShort =
-				(delegate* unmanaged[Cdecl]<IntPtr, byte[], ref ushort, bool>)objectFunctions[head++];
-			Object.getUInt = (delegate* unmanaged[Cdecl]<IntPtr, byte[], ref uint, bool>)objectFunctions[head++];
-			Object.getULong = (delegate* unmanaged[Cdecl]<IntPtr, byte[], ref ulong, bool>)objectFunctions[head++];
-			Object.getFloat = (delegate* unmanaged[Cdecl]<IntPtr, byte[], ref float, bool>)objectFunctions[head++];
-			Object.getDouble =
-				(delegate* unmanaged[Cdecl]<IntPtr, byte[], ref double, bool>)objectFunctions[head++];
-			Object.getEnum = (delegate* unmanaged[Cdecl]<IntPtr, byte[], ref int, bool>)objectFunctions[head++];
-			Object.getString = (delegate* unmanaged[Cdecl]<IntPtr, byte[], byte[], bool>)objectFunctions[head++];
-			Object.getText = (delegate* unmanaged[Cdecl]<IntPtr, byte[], byte[], bool>)objectFunctions[head++];
-			Object.setBool = (delegate* unmanaged[Cdecl]<IntPtr, byte[], bool, bool>)objectFunctions[head++];
-			Object.setByte = (delegate* unmanaged[Cdecl]<IntPtr, byte[], byte, bool>)objectFunctions[head++];
-			Object.setShort = (delegate* unmanaged[Cdecl]<IntPtr, byte[], short, bool>)objectFunctions[head++];
-			Object.setInt = (delegate* unmanaged[Cdecl]<IntPtr, byte[], int, bool>)objectFunctions[head++];
-			Object.setLong = (delegate* unmanaged[Cdecl]<IntPtr, byte[], long, bool>)objectFunctions[head++];
-			Object.setUShort = (delegate* unmanaged[Cdecl]<IntPtr, byte[], ushort, bool>)objectFunctions[head++];
-			Object.setUInt = (delegate* unmanaged[Cdecl]<IntPtr, byte[], uint, bool>)objectFunctions[head++];
-			Object.setULong = (delegate* unmanaged[Cdecl]<IntPtr, byte[], ulong, bool>)objectFunctions[head++];
-			Object.setFloat = (delegate* unmanaged[Cdecl]<IntPtr, byte[], float, bool>)objectFunctions[head++];
-			Object.setDouble = (delegate* unmanaged[Cdecl]<IntPtr, byte[], double, bool>)objectFunctions[head++];
-			Object.setEnum = (delegate* unmanaged[Cdecl]<IntPtr, byte[], int, bool>)objectFunctions[head++];
-			Object.setString = (delegate* unmanaged[Cdecl]<IntPtr, byte[], byte[], bool>)objectFunctions[head++];
-			Object.setText = (delegate* unmanaged[Cdecl]<IntPtr, byte[], byte[], bool>)objectFunctions[head++];
-		}
 		unchecked {
 			Type[] types = pluginAssembly.GetTypes();
 
@@ -215,38 +167,70 @@ internal static class Shared
 }
 
 static unsafe partial class Debug {
-	internal static delegate* unmanaged[Cdecl]<LogLevel, byte[], void> log;
+	[DllImport("UE4SS.dll", EntryPoint = @"?Log@Debug@Framework@DotNetLibrary@RC@@SAXW4LogLevel@54@PEBD@Z")]
+	internal static extern void Log(LogLevel level, byte[] message);
 }
 
-internal static unsafe class Object {
-	internal static delegate* unmanaged[Cdecl]<IntPtr, bool> isValid;
-	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], bool> invoke;
-	internal static delegate* unmanaged[Cdecl]<byte[], IntPtr> find;
-	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], void> getName;
-	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], ref bool, bool> getBool;
-	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], ref byte, bool> getByte;
-	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], ref short, bool> getShort;
-	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], ref int, bool> getInt;
-	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], ref long, bool> getLong;
-	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], ref ushort, bool> getUShort;
-	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], ref uint, bool> getUInt;
-	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], ref ulong, bool> getULong;
-	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], ref float, bool> getFloat;
-	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], ref double, bool> getDouble;
-	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], ref int, bool> getEnum;
-	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], byte[], bool> getString;
-	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], byte[], bool> getText;
-	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], bool, bool> setBool;
-	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], byte, bool> setByte;
-	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], short, bool> setShort;
-	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], int, bool> setInt;
-	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], long, bool> setLong;
-	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], ushort, bool> setUShort;
-	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], uint, bool> setUInt;
-	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], ulong, bool> setULong;
-	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], float, bool> setFloat;
-	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], double, bool> setDouble;
-	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], int, bool> setEnum;
-	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], byte[], bool> setString;
-	internal static delegate* unmanaged[Cdecl]<IntPtr, byte[], byte[], bool> setText;
+internal static unsafe class Object
+{
+	[DllImport("UE4SS.dll", EntryPoint = @"?IsValid@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@@Z")]
+	internal static extern bool IsValid(IntPtr @object);
+	[DllImport("UE4SS.dll", EntryPoint = @"?Invoke@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBD@Z")]
+	internal static extern bool Invoke(IntPtr @object, byte[] command);
+	[DllImport("UE4SS.dll", EntryPoint = @"?Find@Object@Framework@DotNetLibrary@RC@@SAPEAVUObject@Unreal@4@PEBD@Z")]
+	internal static extern IntPtr Find(byte[] name);
+	[DllImport("UE4SS.dll", EntryPoint = @"?GetName@Object@Framework@DotNetLibrary@RC@@SAXPEAVUObject@Unreal@4@PEAD@Z")]
+	internal static extern void GetName(IntPtr @object, byte[] name);
+	[DllImport("UE4SS.dll", EntryPoint = @"?GetBool@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDPEA_N@Z")]
+	internal static extern bool GetBool(IntPtr @object, byte[] name, ref bool value);
+	[DllImport("UE4SS.dll", EntryPoint = @"?GetByte@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDPEAE@Z")]
+	internal static extern bool GetByte(IntPtr @object, byte[] name, ref byte value);
+	[DllImport("UE4SS.dll", EntryPoint = @"?GetShort@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDPEAF@Z")]
+	internal static extern bool GetShort(IntPtr @object, byte[] name, ref short value);
+	[DllImport("UE4SS.dll", EntryPoint = @"?GetInt@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDPEAH@Z")]
+	internal static extern bool GetInt(IntPtr @object, byte[] name, ref int value);
+	[DllImport("UE4SS.dll", EntryPoint = @"?GetLong@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDPEA_J@Z")]
+	internal static extern bool GetLong(IntPtr @object, byte[] name, ref long value);
+	[DllImport("UE4SS.dll", EntryPoint = @"?GetUShort@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDPEAG@Z")]
+	internal static extern bool GetUShort(IntPtr @object, byte[] name, ref ushort value);
+	[DllImport("UE4SS.dll", EntryPoint = @"?GetUInt@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDPEAI@Z")]
+	internal static extern bool GetUInt(IntPtr @object, byte[] name, ref uint value);
+	[DllImport("UE4SS.dll", EntryPoint = @"?GetULong@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDPEA_K@Z")]
+	internal static extern bool GetULong(IntPtr @object, byte[] name, ref ulong value);
+	[DllImport("UE4SS.dll", EntryPoint = @"?GetFloat@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDPEAM@Z")]
+	internal static extern bool GetFloat(IntPtr @object, byte[] name, ref float value);
+	[DllImport("UE4SS.dll", EntryPoint = @"?GetDouble@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDPEAN@Z")]
+	internal static extern bool GetDouble(IntPtr @object, byte[] name, ref double value);
+	[DllImport("UE4SS.dll", EntryPoint = @"?GetEnum@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDPEAH@Z")]
+	internal static extern bool GetEnum(IntPtr @object, byte[] name, ref int value);
+	[DllImport("UE4SS.dll", EntryPoint = @"?GetString@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDPEAD@Z")]
+	internal static extern bool GetString(IntPtr @object, byte[] name, byte[] value);
+	[DllImport("UE4SS.dll", EntryPoint = @"?GetText@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDPEAD@Z")]
+	internal static extern bool GetText(IntPtr @object, byte[] name, byte[] value);
+	[DllImport("UE4SS.dll", EntryPoint = @"?SetBool@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBD_N@Z")]
+	internal static extern bool SetBool(IntPtr @object, byte[] name, bool value);
+	[DllImport("UE4SS.dll", EntryPoint = @"?SetByte@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDE@Z")]
+	internal static extern bool SetByte(IntPtr @object, byte[] name, byte value);
+	[DllImport("UE4SS.dll", EntryPoint = @"?SetShort@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDF@Z")]
+	internal static extern bool SetShort(IntPtr @object, byte[] name, short value);
+	[DllImport("UE4SS.dll", EntryPoint = @"?SetInt@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDH@Z")]
+	internal static extern bool SetInt(IntPtr @object, byte[] name, int value);
+	[DllImport("UE4SS.dll", EntryPoint = @"?SetLong@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBD_J@Z")]
+	internal static extern bool SetLong(IntPtr @object, byte[] name, long value);
+	[DllImport("UE4SS.dll", EntryPoint = @"?SetUShort@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDG@Z")]
+	internal static extern bool SetUShort(IntPtr @object, byte[] name, ushort value);
+	[DllImport("UE4SS.dll", EntryPoint = @"?SetUInt@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDI@Z")]
+	internal static extern bool SetUInt(IntPtr @object, byte[] name, uint value);
+	[DllImport("UE4SS.dll", EntryPoint = @"?SetULong@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBD_K@Z")]
+	internal static extern bool SetULong(IntPtr @object, byte[] name, ulong value);
+	[DllImport("UE4SS.dll", EntryPoint = @"?SetFloat@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDM@Z")]
+	internal static extern bool SetFloat(IntPtr @object, byte[] name, float value);
+	[DllImport("UE4SS.dll", EntryPoint = @"?SetDouble@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDN@Z")]
+	internal static extern bool SetDouble(IntPtr @object, byte[] name, double value);
+	[DllImport("UE4SS.dll", EntryPoint = @"?SetEnum@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDH@Z")]
+	internal static extern bool SetEnum(IntPtr @object, byte[] name, int value);
+	[DllImport("UE4SS.dll", EntryPoint = @"?SetString@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBD1@Z")]
+	internal static extern bool SetString(IntPtr @object, byte[] name, byte[] value);
+	[DllImport("UE4SS.dll", EntryPoint = @"?SetText@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBD1@Z")]
+	internal static extern bool SetText(IntPtr @object, byte[] name, byte[] value);
 }
