@@ -191,9 +191,14 @@ namespace UE4SSDotNetFramework.Framework
 	public class ObjectReference : IEquatable<ObjectReference> {
 		private IntPtr pointer;
 		
-		internal ObjectReference(IntPtr pointer) => Pointer = pointer;
+		public ObjectReference(IntPtr pointer) => Pointer = pointer;
 
-		internal IntPtr Pointer {
+		public ObjectReference()
+		{
+			pointer = 0;
+		}
+
+		public IntPtr Pointer {
 			get {
 				if (!IsCreated)
 					throw new InvalidOperationException();
@@ -243,15 +248,11 @@ namespace UE4SSDotNetFramework.Framework
 		/// <returns>An object or <c>null</c> on failure</returns>
 		public static ObjectReference? Find(string name)
 		{
-			if (name == null)
-				throw new ArgumentNullException(nameof(name));
+            ArgumentNullException.ThrowIfNull(name);
 
-			IntPtr pointer = Object.Find(name.StringToBytes());
+            var pointer = Object.Find(name.StringToBytes());
 
-			if (pointer != IntPtr.Zero)
-				return new(pointer);
-
-			return null;
+			return pointer != IntPtr.Zero ? new ObjectReference(pointer) : null;
 		}
 		
 		/// <summary>
@@ -263,44 +264,31 @@ namespace UE4SSDotNetFramework.Framework
 		/// Retrieves the value of the object property
 		/// </summary>
 		public ObjectReference? GetObjectReference(string name) {
-			if (name == null)
-				throw new ArgumentNullException(nameof(name));
+            ArgumentNullException.ThrowIfNull(name);
 
-			IntPtr valuePtr = 0;
+            IntPtr valuePtr = 0;
 			
-			if (Object.GetObjectReference(Pointer, name.StringToBytes(), ref valuePtr))
-			{
-				return new ObjectReference(valuePtr);
-			}
-
-			return null;
+			return Object.GetObjectReference(Pointer, name.StringToBytes(), ref valuePtr) ? new ObjectReference(valuePtr) : null;
 		}
 
 		/// <summary>
 		/// Retrieves the value of the object property
 		/// </summary>
 		public ObjectReference? GetFunction(string name) {
-			if (name == null)
-				throw new ArgumentNullException(nameof(name));
+            ArgumentNullException.ThrowIfNull(name);
 
-			IntPtr valuePtr = 0;
+            IntPtr valuePtr = 0;
 			
-			if (Object.GetFunction(Pointer, name.StringToBytes(), ref valuePtr))
-			{
-				return new ObjectReference(valuePtr);
-			}
-
-			return null;
+			return Object.GetFunction(Pointer, name.StringToBytes(), ref valuePtr) ? new ObjectReference(valuePtr) : null;
 		}
 
 		/// <summary>
 		/// Retrieves the value of the bool property
 		/// </summary>
 		public bool GetBool(string name, ref bool value) {
-			if (name == null)
-				throw new ArgumentNullException(nameof(name));
+            ArgumentNullException.ThrowIfNull(name);
 
-			return Object.GetBool(Pointer, name.StringToBytes(), ref value);
+            return Object.GetBool(Pointer, name.StringToBytes(), ref value);
 		}
 
 		/// <summary>
@@ -308,10 +296,9 @@ namespace UE4SSDotNetFramework.Framework
 		/// </summary>
 		/// <returns><c>true</c> on success</returns>
 		public bool GetByte(string name, ref byte value) {
-			if (name == null)
-				throw new ArgumentNullException(nameof(name));
+            ArgumentNullException.ThrowIfNull(name);
 
-			return Object.GetByte(Pointer, name.StringToBytes(), ref value);
+            return Object.GetByte(Pointer, name.StringToBytes(), ref value);
 		}
 
 		/// <summary>
@@ -319,8 +306,7 @@ namespace UE4SSDotNetFramework.Framework
 		/// </summary>
 		/// <returns><c>true</c> on success</returns>
 		public bool GetShort(string name, ref short value) {
-			if (name == null)
-				throw new ArgumentNullException(nameof(name));
+			ArgumentNullException.ThrowIfNull(name);
 
 			return Object.GetShort(Pointer, name.StringToBytes(), ref value);
 		}
@@ -330,8 +316,7 @@ namespace UE4SSDotNetFramework.Framework
 		/// </summary>
 		/// <returns><c>true</c> on success</returns>
 		public bool GetInt(string name, ref int value) {
-			if (name == null)
-				throw new ArgumentNullException(nameof(name));
+			ArgumentNullException.ThrowIfNull(name);
 
 			return Object.GetInt(Pointer, name.StringToBytes(), ref value);
 		}
@@ -341,8 +326,7 @@ namespace UE4SSDotNetFramework.Framework
 		/// </summary>
 		/// <returns><c>true</c> on success</returns>
 		public bool GetLong(string name, ref long value) {
-			if (name == null)
-				throw new ArgumentNullException(nameof(name));
+			ArgumentNullException.ThrowIfNull(name);
 
 			return Object.GetLong(Pointer, name.StringToBytes(), ref value);
 		}
@@ -352,8 +336,7 @@ namespace UE4SSDotNetFramework.Framework
 		/// </summary>
 		/// <returns><c>true</c> on success</returns>
 		public bool GetUShort(string name, ref ushort value) {
-			if (name == null)
-				throw new ArgumentNullException(nameof(name));
+			ArgumentNullException.ThrowIfNull(name);
 
 			return Object.GetUShort(Pointer, name.StringToBytes(), ref value);
 		}
@@ -363,8 +346,7 @@ namespace UE4SSDotNetFramework.Framework
 		/// </summary>
 		/// <returns><c>true</c> on success</returns>
 		public bool GetUInt(string name, ref uint value) {
-			if (name == null)
-				throw new ArgumentNullException(nameof(name));
+			ArgumentNullException.ThrowIfNull(name);
 
 			return Object.GetUInt(Pointer, name.StringToBytes(), ref value);
 		}
@@ -374,8 +356,7 @@ namespace UE4SSDotNetFramework.Framework
 		/// </summary>
 		/// <returns><c>true</c> on success</returns>
 		public bool GetULong(string name, ref ulong value) {
-			if (name == null)
-				throw new ArgumentNullException(nameof(name));
+			ArgumentNullException.ThrowIfNull(name);
 
 			return Object.GetULong(Pointer, name.StringToBytes(), ref value);
 		}
@@ -385,17 +366,11 @@ namespace UE4SSDotNetFramework.Framework
 		/// </summary>
 		/// <returns><c>true</c> on success</returns>
 		public StructReference? GetStruct(string name) {
-			if (name == null)
-				throw new ArgumentNullException(nameof(name));
+			ArgumentNullException.ThrowIfNull(name);
 
 			IntPtr valuePtr = 0;
 			
-			if (Object.GetStruct(Pointer, name.StringToBytes(), ref valuePtr))
-			{
-				return new StructReference(valuePtr);
-			}
-
-			return null;
+			return Object.GetStruct(Pointer, name.StringToBytes(), ref valuePtr) ? new StructReference(valuePtr) : null;
 		}
 
 		/// <summary>
@@ -403,11 +378,8 @@ namespace UE4SSDotNetFramework.Framework
 		/// </summary>
 		/// <returns><c>true</c> on success</returns>
 		public bool GetArray(string name, ref UnArray value) {
-			if (name == null)
-				throw new ArgumentNullException(nameof(name));
+			ArgumentNullException.ThrowIfNull(name);
 
-			IntPtr valuePtr = 0;
-			
 			return Object.GetArray(Pointer, name.StringToBytes(), ref value);
 		}
 
@@ -416,8 +388,7 @@ namespace UE4SSDotNetFramework.Framework
 		/// </summary>
 		/// <returns><c>true</c> on success</returns>
 		public bool GetFloat(string name, ref float value) {
-			if (name == null)
-				throw new ArgumentNullException(nameof(name));
+			ArgumentNullException.ThrowIfNull(name);
 
 			return Object.GetFloat(Pointer, name.StringToBytes(), ref value);
 		}
@@ -427,8 +398,7 @@ namespace UE4SSDotNetFramework.Framework
 		/// </summary>
 		/// <returns><c>true</c> on success</returns>
 		public bool GetDouble(string name, ref double value) {
-			if (name == null)
-				throw new ArgumentNullException(nameof(name));
+			ArgumentNullException.ThrowIfNull(name);
 
 			return Object.GetDouble(Pointer, name.StringToBytes(), ref value);
 		}
@@ -438,26 +408,22 @@ namespace UE4SSDotNetFramework.Framework
 		/// </summary>
 		/// <returns><c>true</c> on success</returns>
 		public bool GetEnum<T>(string name, ref T value) where T : Enum {
-			if (name == null)
-				throw new ArgumentNullException(nameof(name));
+			ArgumentNullException.ThrowIfNull(name);
 
-			int data = 0;
+			var data = 0;
 
-			if (Object.GetEnum(Pointer, name.StringToBytes(), ref data)) {
-				value = (T)Enum.ToObject(typeof(T), data);
+			if (!Object.GetEnum(Pointer, name.StringToBytes(), ref data)) return false;
+			value = (T)Enum.ToObject(typeof(T), data);
 
-				return true;
-			}
+			return true;
 
-			return false;
 		}
 
 		public bool GetWeakObject(string name, ref WeakObjectPtr value)
 		{
-			if (name == null)
-				throw new ArgumentNullException(nameof(name));
+            ArgumentNullException.ThrowIfNull(name);
 
-			return Object.GetWeakObject(Pointer, name.StringToBytes(), ref value);
+            return Object.GetWeakObject(Pointer, name.StringToBytes(), ref value);
 		}
 
 		/// <summary>
@@ -465,18 +431,15 @@ namespace UE4SSDotNetFramework.Framework
 		/// </summary>
 		/// <returns><c>true</c> on success</returns>
 		public bool GetString(string name, ref string value) {
-			if (name == null)
-				throw new ArgumentNullException(nameof(name));
+			ArgumentNullException.ThrowIfNull(name);
 
-			byte[] stringBuffer = ArrayPool.GetStringBuffer();
+			var stringBuffer = ArrayPool.GetStringBuffer();
 
-			if (Object.GetString(Pointer, name.StringToBytes(), stringBuffer)) {
-				value = stringBuffer.BytesToString();
+			if (!Object.GetString(Pointer, name.StringToBytes(), stringBuffer)) return false;
+			value = stringBuffer.BytesToString();
 
-				return true;
-			}
+			return true;
 
-			return false;
 		}
 
 		/// <summary>
@@ -484,28 +447,24 @@ namespace UE4SSDotNetFramework.Framework
 		/// </summary>
 		/// <returns><c>true</c> on success</returns>
 		public bool GetText(string name, ref string value) {
-			if (name == null)
-				throw new ArgumentNullException(nameof(name));
+			ArgumentNullException.ThrowIfNull(name);
 
-			byte[] stringBuffer = ArrayPool.GetStringBuffer();
+			var stringBuffer = ArrayPool.GetStringBuffer();
 
-			if (Object.GetText(Pointer, name.StringToBytes(), stringBuffer)) {
-				value = stringBuffer.BytesToString();
+			if (!Object.GetText(Pointer, name.StringToBytes(), stringBuffer)) return false;
+			value = stringBuffer.BytesToString();
 
-				return true;
-			}
+			return true;
 
-			return false;
 		}
 
 		/// <summary>
 		/// Sets the value of the bool property
 		/// </summary>
 		public bool SetBool(string name, bool value) {
-			if (name == null)
-				throw new ArgumentNullException(nameof(name));
+            ArgumentNullException.ThrowIfNull(name);
 
-			return Object.SetBool(Pointer, name.StringToBytes(), value);
+            return Object.SetBool(Pointer, name.StringToBytes(), value);
 		}
 		
 		/// <summary>
@@ -513,8 +472,7 @@ namespace UE4SSDotNetFramework.Framework
 		/// </summary>
 		/// <returns><c>true</c> on success</returns>
 		public bool SetObjectReference(string name, ObjectReference value) {
-			if (name == null)
-				throw new ArgumentNullException(nameof(name));
+			ArgumentNullException.ThrowIfNull(name);
 
 			return Object.SetObjectReference(Pointer, name.StringToBytes(), value.Pointer);
 		}
@@ -524,8 +482,7 @@ namespace UE4SSDotNetFramework.Framework
 		/// </summary>
 		/// <returns><c>true</c> on success</returns>
 		public bool SetByte(string name, byte value) {
-			if (name == null)
-				throw new ArgumentNullException(nameof(name));
+			ArgumentNullException.ThrowIfNull(name);
 
 			return Object.SetByte(Pointer, name.StringToBytes(), value);
 		}
@@ -535,8 +492,7 @@ namespace UE4SSDotNetFramework.Framework
 		/// </summary>
 		/// <returns><c>true</c> on success</returns>
 		public bool SetShort(string name, short value) {
-			if (name == null)
-				throw new ArgumentNullException(nameof(name));
+			ArgumentNullException.ThrowIfNull(name);
 
 			return Object.SetShort(Pointer, name.StringToBytes(), value);
 		}
@@ -546,8 +502,7 @@ namespace UE4SSDotNetFramework.Framework
 		/// </summary>
 		/// <returns><c>true</c> on success</returns>
 		public bool SetInt(string name, int value) {
-			if (name == null)
-				throw new ArgumentNullException(nameof(name));
+			ArgumentNullException.ThrowIfNull(name);
 
 			return Object.SetInt(Pointer, name.StringToBytes(), value);
 		}
@@ -557,8 +512,7 @@ namespace UE4SSDotNetFramework.Framework
 		/// </summary>
 		/// <returns><c>true</c> on success</returns>
 		public bool SetLong(string name, long value) {
-			if (name == null)
-				throw new ArgumentNullException(nameof(name));
+			ArgumentNullException.ThrowIfNull(name);
 
 			return Object.SetLong(Pointer, name.StringToBytes(), value);
 		}
@@ -568,8 +522,7 @@ namespace UE4SSDotNetFramework.Framework
 		/// </summary>
 		/// <returns><c>true</c> on success</returns>
 		public bool SetUShort(string name, ushort value) {
-			if (name == null)
-				throw new ArgumentNullException(nameof(name));
+			ArgumentNullException.ThrowIfNull(name);
 
 			return Object.SetUShort(Pointer, name.StringToBytes(), value);
 		}
@@ -579,8 +532,7 @@ namespace UE4SSDotNetFramework.Framework
 		/// </summary>
 		/// <returns><c>true</c> on success</returns>
 		public bool SetUInt(string name, uint value) {
-			if (name == null)
-				throw new ArgumentNullException(nameof(name));
+			ArgumentNullException.ThrowIfNull(name);
 
 			return Object.SetUInt(Pointer, name.StringToBytes(), value);
 		}
@@ -590,8 +542,7 @@ namespace UE4SSDotNetFramework.Framework
 		/// </summary>
 		/// <returns><c>true</c> on success</returns>
 		public bool SetULong(string name, ulong value) {
-			if (name == null)
-				throw new ArgumentNullException(nameof(name));
+			ArgumentNullException.ThrowIfNull(name);
 
 			return Object.SetULong(Pointer, name.StringToBytes(), value);
 		}
@@ -601,8 +552,7 @@ namespace UE4SSDotNetFramework.Framework
 		/// </summary>
 		/// <returns><c>true</c> on success</returns>
 		public bool SetStruct(string name, StructReference value) {
-			if (name == null)
-				throw new ArgumentNullException(nameof(name));
+			ArgumentNullException.ThrowIfNull(name);
 
 			return Object.SetStruct(Pointer, name.StringToBytes(), value.Pointer);
 		}
@@ -612,8 +562,7 @@ namespace UE4SSDotNetFramework.Framework
 		/// </summary>
 		/// <returns><c>true</c> on success</returns>
 		public bool SetArray(string name, UnArray value) {
-			if (name == null)
-				throw new ArgumentNullException(nameof(name));
+			ArgumentNullException.ThrowIfNull(name);
 
 			return Object.SetArray(Pointer, name.StringToBytes(), value);
 		}
@@ -623,8 +572,7 @@ namespace UE4SSDotNetFramework.Framework
 		/// </summary>
 		/// <returns><c>true</c> on success</returns>
 		public bool SetFloat(string name, float value) {
-			if (name == null)
-				throw new ArgumentNullException(nameof(name));
+			ArgumentNullException.ThrowIfNull(name);
 
 			return Object.SetFloat(Pointer, name.StringToBytes(), value);
 		}
@@ -634,8 +582,7 @@ namespace UE4SSDotNetFramework.Framework
 		/// </summary>
 		/// <returns><c>true</c> on success</returns>
 		public bool SetDouble(string name, double value) {
-			if (name == null)
-				throw new ArgumentNullException(nameof(name));
+			ArgumentNullException.ThrowIfNull(name);
 
 			return Object.SetDouble(Pointer, name.StringToBytes(), value);
 		}
@@ -645,8 +592,7 @@ namespace UE4SSDotNetFramework.Framework
 		/// </summary>
 		/// <returns><c>true</c> on success</returns>
 		public bool SetEnum<T>(string name, T value) where T : Enum {
-			if (name == null)
-				throw new ArgumentNullException(nameof(name));
+			ArgumentNullException.ThrowIfNull(name);
 
 			return Object.SetEnum(Pointer, name.StringToBytes(), Convert.ToInt32(value));
 		}
@@ -656,13 +602,11 @@ namespace UE4SSDotNetFramework.Framework
 		/// </summary>
 		/// <returns><c>true</c> on success</returns>
 		public bool SetString(string name, string value) {
-			if (name == null)
-				throw new ArgumentNullException(nameof(name));
+			ArgumentNullException.ThrowIfNull(name);
 
-			if (value == null)
-				throw new ArgumentNullException(nameof(value));
+            ArgumentNullException.ThrowIfNull(value);
 
-			return Object.SetString(Pointer, name.StringToBytes(), value.StringToBytes());
+            return Object.SetString(Pointer, name.StringToBytes(), value.StringToBytes());
 		}
 
 		/// <summary>
@@ -670,31 +614,26 @@ namespace UE4SSDotNetFramework.Framework
 		/// </summary>
 		/// <returns><c>true</c> on success</returns>
 		public bool SetText(string name, string value) {
-			if (name == null)
-				throw new ArgumentNullException(nameof(name));
+            ArgumentNullException.ThrowIfNull(name);
 
-			if (value == null)
-				throw new ArgumentNullException(nameof(value));
+            ArgumentNullException.ThrowIfNull(value);
 
-			return Object.SetText(Pointer, name.StringToBytes(), value.StringToBytes());
+            return Object.SetText(Pointer, name.StringToBytes(), value.StringToBytes());
 		}
 		
 		/// <summary>
 		/// Indicates equality of objects
 		/// </summary>
-		public bool Equals(ObjectReference other) => IsCreated && pointer == other.pointer;
+		public bool Equals(ObjectReference? other) => other is not null && IsCreated && pointer == other.pointer;
 
 		/// <summary>
 		/// Indicates equality of objects
 		/// </summary>
-		public override bool Equals(object value) {
+		public override bool Equals(object? value) {
 			if (value == null)
 				return false;
 
-			if (!ReferenceEquals(value.GetType(), typeof(ObjectReference)))
-				return false;
-
-			return Equals((ObjectReference)value);
+			return ReferenceEquals(value.GetType(), typeof(ObjectReference)) && Equals((ObjectReference)value);
 		}
 
 		/// <summary>
@@ -705,7 +644,7 @@ namespace UE4SSDotNetFramework.Framework
 
 	public unsafe class StructReference : ObjectReference, IEquatable<StructReference>
 	{
-		internal StructReference(IntPtr pointer) : base(pointer)
+		public StructReference(IntPtr pointer) : base(pointer)
 		{
 			Pointer = pointer;
 		}
@@ -729,12 +668,12 @@ namespace UE4SSDotNetFramework.Framework
 		/// <summary>
 		/// Indicates equality of objects
 		/// </summary>
-		public bool Equals(StructReference other) => IsCreated && Pointer == other.Pointer;
+		public bool Equals(StructReference? other) => other is not null && IsCreated && Pointer == other.Pointer;
 
 		/// <summary>
 		/// Indicates equality of objects
 		/// </summary>
-		public override bool Equals(object value) {
+		public override bool Equals(object? value) {
 			if (value == null)
 				return false;
 
@@ -752,12 +691,12 @@ namespace UE4SSDotNetFramework.Framework
 
 	public class ClassReference : StructReference, IEquatable<ClassReference>
 	{
-		internal ClassReference(IntPtr pointer) : base(pointer)
+		public ClassReference(IntPtr pointer) : base(pointer)
 		{
 			Pointer = pointer;
 		}
 
-		public ObjectReference GetCDO()
+		public ObjectReference GetCdo()
 		{
 			IntPtr valuePtr = 0;
 
@@ -773,12 +712,12 @@ namespace UE4SSDotNetFramework.Framework
 		/// <summary>
 		/// Indicates equality of objects
 		/// </summary>
-		public bool Equals(ClassReference other) => IsCreated && Pointer == other.Pointer;
+		public bool Equals(ClassReference? other) => other is not null && IsCreated && Pointer == other.Pointer;
 
 		/// <summary>
 		/// Indicates equality of objects
 		/// </summary>
-		public override bool Equals(object value) {
+		public override bool Equals(object? value) {
 			if (value == null)
 				return false;
 
