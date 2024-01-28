@@ -117,7 +117,7 @@ internal unsafe struct Command {
 internal sealed class Plugin {
 	internal PluginLoader loader;
 	internal Assembly assembly;
-	internal List<Dictionary<int, IntPtr>> userFunctions;
+	internal List<Dictionary<int, IntPtr>?> userFunctions;
 }
 
 internal sealed class AssembliesContextManager {
@@ -146,249 +146,244 @@ public static unsafe class Core
 
 	public static void StartMod()
 	{
-		foreach (var userEvent in userEvents)
-        {
-            if (((IntPtr*)userEvent)[0] is not 0) ((delegate* unmanaged[Cdecl]<void>)((IntPtr*)userEvent)[0])();
-        }
+		foreach (var userEvent in userEvents.Where(userEvent => ((IntPtr*)userEvent)[0] is not 0))
+		{
+			((delegate* unmanaged[Cdecl]<void>)((IntPtr*)userEvent)[0])();
+		}
 	}
 
     public static void StopMod()
-	{
-		foreach (var userEvent in userEvents)
-        {
-            if (((IntPtr*)userEvent)[1] is not 0) ((delegate* unmanaged[Cdecl]<void>)((IntPtr*)userEvent)[1])();
-        }
-	}
+    {
+	    foreach (var userEvent in userEvents.Where(userEvent => ((IntPtr*)userEvent)[1] is not 0))
+	    {
+		    ((delegate* unmanaged[Cdecl]<void>)((IntPtr*)userEvent)[1])();
+	    }
+    }
 
     public static void ProgramStart()
-	{
-		foreach (var userEvent in userEvents)
-		{
-            if (((IntPtr*)userEvent)[2] is not 0) ((delegate* unmanaged[Cdecl]<void>)((IntPtr*)userEvent)[2])();
-        }
+    {
+	    foreach (var userEvent in userEvents.Where(userEvent => ((IntPtr*)userEvent)[2] is not 0))
+	    {
+		    ((delegate* unmanaged[Cdecl]<void>)((IntPtr*)userEvent)[2])();
+	    }
     }
 
     public static void UnrealInit()
-	{
-		foreach (var userEvent in userEvents)
-		{
-            if (((IntPtr*)userEvent)[3] is not 0) ((delegate* unmanaged[Cdecl]<void>)((IntPtr*)userEvent)[3])();
-		}
-	}
+    {
+	    foreach (var userEvent in userEvents.Where(userEvent => ((IntPtr*)userEvent)[3] is not 0))
+	    {
+		    ((delegate* unmanaged[Cdecl]<void>)((IntPtr*)userEvent)[3])();
+	    }
+    }
 
     public static void Update()
-	{
-		foreach (var userEvent in userEvents)
-		{
-			if (((IntPtr*)userEvent)[4] is not 0) ((delegate* unmanaged[Cdecl]<void>)((IntPtr*)userEvent)[4])();
-		}
-	}
+    {
+	    foreach (var userEvent in userEvents.Where(userEvent => ((IntPtr*)userEvent)[4] is not 0))
+	    {
+		    ((delegate* unmanaged[Cdecl]<void>)((IntPtr*)userEvent)[4])();
+	    }
+    }
 	
 	[UnmanagedCallersOnly]
 	internal static IntPtr ManagedCommand(Command command)
 	{
-		if (command.type == CommandType.Execute)
+		switch (command.type)
 		{
-			try
-			{
-				switch (command.value.type)
-				{
-					case ArgumentType.None:
-					{
-						((delegate* unmanaged[Cdecl]<void>)command.function)();
-						break;
-					}
-
-					case ArgumentType.Single:
-					{
-						((delegate* unmanaged[Cdecl]<float, void>)command.function)(command.value.single);
-						break;
-					}
-
-					case ArgumentType.Integer:
-					{
-						((delegate* unmanaged[Cdecl]<uint, void>)command.function)(command.value.integer);
-						break;
-					}
-
-					case ArgumentType.Pointer:
-					{
-						((delegate* unmanaged[Cdecl]<IntPtr, void>)command.function)(command.value.pointer);
-						break;
-					}
-
-					case ArgumentType.Callback:
-					{
-						if (command.value.callback.type == CallbackType.ActorOverlapDelegate ||
-						    command.value.callback.type == CallbackType.ComponentOverlapDelegate ||
-						    command.value.callback.type == CallbackType.ActorKeyDelegate ||
-						    command.value.callback.type == CallbackType.ComponentKeyDelegate)
-							((delegate* unmanaged[Cdecl]<IntPtr, IntPtr, void>)command.function)(
-								command.value.callback.parameters[0], command.value.callback.parameters[1]);
-						else if (command.value.callback.type == CallbackType.ActorHitDelegate ||
-						         command.value.callback.type == CallbackType.ComponentHitDelegate)
-							((delegate* unmanaged[Cdecl]<IntPtr, IntPtr, IntPtr, IntPtr, void>)command.function)(
-								command.value.callback.parameters[0], command.value.callback.parameters[1],
-								command.value.callback.parameters[2], command.value.callback.parameters[3]);
-						else if (command.value.callback.type == CallbackType.ActorCursorDelegate ||
-						         command.value.callback.type == CallbackType.ComponentCursorDelegate ||
-						         command.value.callback.type == CallbackType.CharacterLandedDelegate)
-							((delegate* unmanaged[Cdecl]<IntPtr, void>)command.function)(command.value.callback
-								.parameters[0]);
-						else
-							throw new Exception("Unknown callback type");
-						break;
-					}
-
-					default:
-						throw new Exception("Unknown function type");
-				}
-			}
-
-			catch (Exception exception)
-			{
+			case CommandType.Execute:
 				try
 				{
-					Log(LogLevel.Error, exception.ToString());
-				}
-
-				catch (FileNotFoundException fileNotFoundException)
-				{
-					Log(LogLevel.Error, 
-						"One of the project dependencies is missed! Please, publish the project instead of building it\r\n" +
-						fileNotFoundException);
-				}
-			}
-
-			return default;
-		}
-
-		if (command.type == CommandType.Initialize)
-		{
-			try
-			{
-				assembliesContextManager = new();
-				assembliesContextWeakReference = assembliesContextManager.CreateAssembliesContext();
-
-				int position = 0;
-				IntPtr* buffer = command.buffer;
-
-				unchecked
-				{
-					int head = 0;
-					IntPtr* runtimeFunctions = (IntPtr*)buffer[position++];
-
-					Log = (delegate* unmanaged[Cdecl]<LogLevel, string, void>)runtimeFunctions[head];
-				}
-
-				sharedEvents = buffer[position];
-			}
-
-			catch (Exception exception)
-			{
-				Log(LogLevel.Error, "Runtime initialization failed\r\n" + exception);
-			}
-
-			return new(0xF);
-		}
-
-		if (command.type == CommandType.LoadAssemblies)
-		{
-			try
-			{
-				userEvents = new List<IntPtr>();
-				plugins = new List<Plugin>();
-				const string frameworkAssemblyName = "UE4SSDotNetFramework";
-				string assemblyPath = Assembly.GetExecutingAssembly().Location;
-				string managedFolder =
-					assemblyPath.Substring(0, assemblyPath.IndexOf("DotNetRuntime", StringComparison.Ordinal)) + "DotNetPlugins";
-				string[] folders = Directory.GetDirectories(managedFolder);
-
-				Array.Resize(ref folders, folders.Length + 1);
-
-				folders[^1] = managedFolder;
-
-				foreach (string folder in folders)
-				{
-					IEnumerable<string> assemblies =
-						Directory.EnumerateFiles(folder, "*.dll", SearchOption.AllDirectories);
-
-					foreach (string assembly in assemblies)
+					switch (command.value.type)
 					{
-						AssemblyName name = null;
-						bool loadingFailed = false;
-
-						try
+						case ArgumentType.None:
 						{
-							name = AssemblyName.GetAssemblyName(assembly);
+							((delegate* unmanaged[Cdecl]<void>)command.function)();
+							break;
 						}
 
-						catch (BadImageFormatException)
+						case ArgumentType.Single:
 						{
-							continue;
+							((delegate* unmanaged[Cdecl]<float, void>)command.function)(command.value.single);
+							break;
 						}
 
-						if (name?.Name != frameworkAssemblyName)
+						case ArgumentType.Integer:
 						{
-							var curPlugin = new Plugin();
-							curPlugin.loader = PluginLoader.CreateFromAssemblyFile(assembly, config =>
-							{
-								config.DefaultContext = assembliesContextManager.assembliesContext;
-								config.IsUnloadable = true;
-								config.LoadInMemory = true;
-							});
-							curPlugin.assembly = curPlugin.loader.LoadAssemblyFromPath(assembly);
-							curPlugin.userFunctions = new List<Dictionary<int, IntPtr>>();
+							((delegate* unmanaged[Cdecl]<uint, void>)command.function)(command.value.integer);
+							break;
+						}
 
-							AssemblyName[] referencedAssemblies = curPlugin.assembly.GetReferencedAssemblies();
+						case ArgumentType.Pointer:
+						{
+							((delegate* unmanaged[Cdecl]<IntPtr, void>)command.function)(command.value.pointer);
+							break;
+						}
 
-							foreach (AssemblyName referencedAssembly in referencedAssemblies)
+						case ArgumentType.Callback:
+						{
+							if (command.value.callback.type == CallbackType.ActorOverlapDelegate ||
+							    command.value.callback.type == CallbackType.ComponentOverlapDelegate ||
+							    command.value.callback.type == CallbackType.ActorKeyDelegate ||
+							    command.value.callback.type == CallbackType.ComponentKeyDelegate)
+								((delegate* unmanaged[Cdecl]<IntPtr, IntPtr, void>)command.function)(
+									command.value.callback.parameters[0], command.value.callback.parameters[1]);
+							else if (command.value.callback.type == CallbackType.ActorHitDelegate ||
+							         command.value.callback.type == CallbackType.ComponentHitDelegate)
+								((delegate* unmanaged[Cdecl]<IntPtr, IntPtr, IntPtr, IntPtr, void>)command.function)(
+									command.value.callback.parameters[0], command.value.callback.parameters[1],
+									command.value.callback.parameters[2], command.value.callback.parameters[3]);
+							else if (command.value.callback.type == CallbackType.ActorCursorDelegate ||
+							         command.value.callback.type == CallbackType.ComponentCursorDelegate ||
+							         command.value.callback.type == CallbackType.CharacterLandedDelegate)
+								((delegate* unmanaged[Cdecl]<IntPtr, void>)command.function)(command.value.callback
+									.parameters[0]);
+							else
+								throw new Exception("Unknown callback type");
+							break;
+						}
+
+						default:
+							throw new Exception("Unknown function type");
+					}
+				}
+
+				catch (Exception exception)
+				{
+					try
+					{
+						Log(LogLevel.Error, exception.ToString());
+					}
+
+					catch (FileNotFoundException fileNotFoundException)
+					{
+						Log(LogLevel.Error, 
+							"One of the project dependencies is missed! Please, publish the project instead of building it\r\n" +
+							fileNotFoundException);
+					}
+				}
+
+				return default;
+			case CommandType.Initialize:
+				try
+				{
+					assembliesContextManager = new();
+					assembliesContextWeakReference = assembliesContextManager.CreateAssembliesContext();
+
+					int position = 0;
+					IntPtr* buffer = command.buffer;
+
+					unchecked
+					{
+						int head = 0;
+						IntPtr* runtimeFunctions = (IntPtr*)buffer[position++];
+
+						Log = (delegate* unmanaged[Cdecl]<LogLevel, string, void>)runtimeFunctions[head];
+					}
+
+					sharedEvents = buffer[position];
+				}
+
+				catch (Exception exception)
+				{
+					Log(LogLevel.Error, "Runtime initialization failed\r\n" + exception);
+				}
+
+				return new(0xF);
+			case CommandType.LoadAssemblies:
+				try
+				{
+					userEvents = new List<IntPtr>();
+					plugins = new List<Plugin>();
+					const string frameworkAssemblyName = "UE4SSDotNetFramework";
+					string assemblyPath = Assembly.GetExecutingAssembly().Location;
+					string managedFolder =
+						assemblyPath.Substring(0, assemblyPath.IndexOf("DotNetRuntime", StringComparison.Ordinal)) + "DotNetPlugins";
+					string[] folders = Directory.GetDirectories(managedFolder);
+
+					Array.Resize(ref folders, folders.Length + 1);
+
+					folders[^1] = managedFolder;
+
+					foreach (string folder in folders)
+					{
+						IEnumerable<string> assemblies =
+							Directory.EnumerateFiles(folder, "*.dll", SearchOption.AllDirectories);
+
+						foreach (string assembly in assemblies)
+						{
+							AssemblyName name = null;
+							bool loadingFailed = false;
+
+							try
 							{
-								if (referencedAssembly.Name == frameworkAssemblyName)
+								name = AssemblyName.GetAssemblyName(assembly);
+							}
+
+							catch (BadImageFormatException)
+							{
+								continue;
+							}
+
+							if (name?.Name != frameworkAssemblyName)
+							{
+								var curPlugin = new Plugin();
+								curPlugin.loader = PluginLoader.CreateFromAssemblyFile(assembly, config =>
 								{
-									Assembly framework = curPlugin.loader.LoadAssembly(referencedAssembly);
+									config.DefaultContext = assembliesContextManager.assembliesContext;
+									config.IsUnloadable = true;
+									config.LoadInMemory = true;
+								});
+								curPlugin.assembly = curPlugin.loader.LoadAssemblyFromPath(assembly);
+								curPlugin.userFunctions = new List<Dictionary<int, IntPtr>?>();
 
-									using (assembliesContextManager.assembliesContext.EnterContextualReflection())
+								AssemblyName[] referencedAssemblies = curPlugin.assembly.GetReferencedAssemblies();
+
+								foreach (AssemblyName referencedAssembly in referencedAssemblies)
+								{
+									if (referencedAssembly.Name == frameworkAssemblyName)
 									{
-										Type sharedClass = framework.GetType(frameworkAssemblyName + ".Framework" + ".Shared");
+										Assembly framework = curPlugin.loader.LoadAssembly(referencedAssembly);
 
-										IntPtr events = Marshal.AllocHGlobal(sizeof(IntPtr) * 5);
-										Unsafe.InitBlockUnaligned((byte*)events, 0, (uint)(sizeof(IntPtr) * 5));
+										using (assembliesContextManager.assembliesContext.EnterContextualReflection())
+										{
+											Type sharedClass = framework.GetType(frameworkAssemblyName + ".Framework" + ".Shared");
 
-                                        curPlugin.userFunctions.Add((Dictionary<int, IntPtr>)sharedClass
-											.GetMethod("Load", BindingFlags.NonPublic | BindingFlags.Static)
-											.Invoke(null,
-												new object[] { events, curPlugin.assembly }));
+											IntPtr events = Marshal.AllocHGlobal(sizeof(IntPtr) * 5);
+											Unsafe.InitBlockUnaligned((byte*)events, 0, (uint)(sizeof(IntPtr) * 5));
+
+											curPlugin.userFunctions.Add((Dictionary<int, IntPtr>)sharedClass
+												.GetMethod("Load", BindingFlags.NonPublic | BindingFlags.Static)
+												.Invoke(null,
+													[events, curPlugin.assembly]));
                                         
-										userEvents.Add(events);
+											userEvents.Add(events);
 
-                                        sharedClass
-											.GetMethod("Load", BindingFlags.NonPublic | BindingFlags.Static)
-											.Invoke(null,
-												new object[] { sharedEvents, Assembly.GetExecutingAssembly() });
+											sharedClass
+												.GetMethod("Load", BindingFlags.NonPublic | BindingFlags.Static)
+												.Invoke(null,
+													[sharedEvents, Assembly.GetExecutingAssembly()]);
 
-										plugins.Add(curPlugin);
+											plugins.Add(curPlugin);
 
-										Log(LogLevel.Default, "Framework loaded succesfuly for " + assembly);
+											Log(LogLevel.Default, "Framework loaded succesfuly for " + assembly);
+										}
 									}
 								}
 							}
 						}
 					}
 				}
-			}
 
-			catch (Exception exception)
-			{
-				Log(LogLevel.Error, "Loading of assemblies failed\r\n" + exception);
+				catch (Exception exception)
+				{
+					Log(LogLevel.Error, "Loading of assemblies failed\r\n" + exception);
+					UnloadAssemblies();
+				}
+
+				return default;
+			case CommandType.UnloadAssemblies:
 				UnloadAssemblies();
-			}
-
-			return default;
+				break;
 		}
-
-		if (command.type == CommandType.UnloadAssemblies)
-			UnloadAssemblies();
 
 		return default;
 	}

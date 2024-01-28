@@ -150,8 +150,45 @@ namespace UE4SSDotNetFramework.Framework
 	/// </summary>
 	public static partial class Debug
 	{
-		[ThreadStatic] private static StringBuilder stringBuffer = new(8192);
+		private enum Protection {
+			ReadWrite = 0x04,
+		}
+    
+		[DllImport("kernel32.dll", SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		private static extern bool VirtualProtect(IntPtr lpAddress, uint dwSize,
+			Protection flNewProtect, out Protection lpflOldProtect);
 
+		private static byte[] ToByteArray(object? value, int maxLength)
+		{
+			int rawsize = Marshal.SizeOf(value);
+			byte[] rawdata = new byte[rawsize];
+			GCHandle handle =
+				GCHandle.Alloc(rawdata,
+					GCHandleType.Pinned);
+			Marshal.StructureToPtr(value,
+				handle.AddrOfPinnedObject(),
+				false);
+			handle.Free();
+			if (maxLength < rawdata.Length) {
+				byte[] temp = new byte[maxLength];
+				Array.Copy(rawdata, temp, maxLength);
+				return temp;
+			} else {
+				return rawdata;
+			}
+		}
+		
+		public static unsafe bool WriteToProtectedMemory<T>(IntPtr addr, T? value) where T : unmanaged
+		{
+			var array = ToByteArray(value, sizeof(T));
+			var success = VirtualProtect(addr, (uint)array.Length, Protection.ReadWrite, out var old);
+			if (!success) return false;
+        
+			Marshal.Copy(array, 0, addr, array.Length);
+			return VirtualProtect(addr, (uint)array.Length, old, out old);
+		}
+		
 		/// <summary>
 		/// Logs a message in accordance to the specified level, omitted in builds with the <a href="https://docs.unrealengine.com/en-US/Programming/Development/BuildConfigurations/index.html#buildconfigurationdescriptions">Shipping</a> configuration
 		/// </summary>
@@ -166,8 +203,6 @@ namespace UE4SSDotNetFramework.Framework
 	
 	public static partial class Hooking
 	{
-		private static IntPtr _baseAddress;
-
 		public static IntPtr SigScan(string signature)
 		{
 			return SigScan(signature.StringToBytes());
