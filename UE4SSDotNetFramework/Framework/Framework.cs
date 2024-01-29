@@ -445,7 +445,7 @@ namespace UE4SSDotNetFramework.Framework
 		public bool GetEnum<T>(string name, ref T value) where T : Enum {
 			ArgumentNullException.ThrowIfNull(name);
 
-			var data = 0;
+			long data = 0;
 
 			if (!Object.GetEnum(Pointer, name.StringToBytes(), ref data)) return false;
 			value = (T)Enum.ToObject(typeof(T), data);

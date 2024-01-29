@@ -195,7 +195,7 @@ internal enum PropertyType
 partial struct UnArray
 {
 	private IntPtr Data;
-	private ulong Length;
+	private uint Length;
 	private PropertyType Type;
 }
 
@@ -278,7 +278,7 @@ internal static class Object
 	[DllImport("UE4SS.dll", EntryPoint = "?GetDouble@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDPEAN@Z")]
 	internal static extern bool GetDouble(IntPtr @object, byte[] name, ref double value);
 	[DllImport("UE4SS.dll", EntryPoint = "?GetEnum@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDPEAH@Z")]
-	internal static extern bool GetEnum(IntPtr @object, byte[] name, ref int value);
+	internal static extern bool GetEnum(IntPtr @object, byte[] name, ref long value);
 	[DllImport("UE4SS.dll", EntryPoint = "?GetWeakObject@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDPEAUFWeakObjectPtr@64@@Z")]
 	internal static extern bool GetWeakObject(IntPtr @object, byte[] name, ref WeakObjectPtr value);
 	[DllImport("UE4SS.dll", EntryPoint = "?GetString@Object@Framework@DotNetLibrary@RC@@SA_NPEAVUObject@Unreal@4@PEBDPEAD@Z")]
