@@ -213,9 +213,24 @@ namespace UE4SSDotNetFramework.Framework
 			return HookInternal(address, hook, ref original);
 		}
 		
+		public static unsafe int HookUFunctionPre(string name, UnrealScriptFunctionCallable preCallback, void* customData)
+		{
+			return HookUFunctionPreInternal(name, preCallback, customData);
+		}
+		
+		public static unsafe int HookUFunctionPost(string name, UnrealScriptFunctionCallable postCallback, void* customData)
+		{
+			return HookUFunctionPostInternal(name, postCallback, customData);
+		}
+		
 		public static void Unhook(IntPtr hook)
 		{
 			UnhookInternal(hook);
+		}
+		
+		public static bool Unhook(string name, int callbackId)
+		{
+			return UnhookUFunctionInternal(name, callbackId);
 		}
 	}
 

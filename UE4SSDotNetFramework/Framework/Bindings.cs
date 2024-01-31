@@ -211,14 +211,31 @@ static partial class Debug {
 	private static extern void Log(LogLevel level, byte[] message);
 }
 
+
+[StructLayout(LayoutKind.Sequential)]
+public struct UnrealScriptFunctionCallableContext
+{
+	public IntPtr Context;
+	public IntPtr Stack;
+	public unsafe void* ResultDecl;
+}
+
 static partial class Hooking
 {
+	public unsafe delegate void UnrealScriptFunctionCallable(UnrealScriptFunctionCallableContext* context, void* customData);
+	
 	[DllImport("UE4SS.dll", EntryPoint = "?SigScan@Hooking@Framework@DotNetLibrary@RC@@SA_JPEBD@Z")]
 	private static extern IntPtr SigScan(byte[] signature);
 	[DllImport("UE4SS.dll", EntryPoint = "?Hook@Hooking@Framework@DotNetLibrary@RC@@SAPEAVx64Detour@PLH@@_K0PEA_K@Z")]
 	private static extern IntPtr HookInternal(IntPtr address, IntPtr hook, ref IntPtr original);
+	[DllImport("UE4SS.dll", EntryPoint = "?HookUFunctionPre@Hooking@Framework@DotNetLibrary@RC@@SAHPEBDAEBV?$function@$$A6AXAEAVUnrealScriptFunctionCallableContext@Unreal@RC@@PEAX@Z@std@@PEAX@Z")]
+	private static extern unsafe int HookUFunctionPreInternal(string name, UnrealScriptFunctionCallable preCallback, void* customData);
+	[DllImport("UE4SS.dll", EntryPoint = "?HookUFunctionPost@Hooking@Framework@DotNetLibrary@RC@@SAHPEBDAEBV?$function@$$A6AXAEAVUnrealScriptFunctionCallableContext@Unreal@RC@@PEAX@Z@std@@PEAX@Z")]
+	private static extern unsafe int HookUFunctionPostInternal(string name, UnrealScriptFunctionCallable postCallback, void* customData);
 	[DllImport("UE4SS.dll", EntryPoint = "?Unhook@Hooking@Framework@DotNetLibrary@RC@@SAXPEAVx64Detour@PLH@@@Z")]
 	private static extern void UnhookInternal(IntPtr hook);
+	[DllImport("UE4SS.dll", EntryPoint = "?UnhookUFunction@Hooking@Framework@DotNetLibrary@RC@@SA_NPEBDH@Z")]
+	private static extern bool UnhookUFunctionInternal(string name, int callbackId);
 }
 
 internal static class Object
