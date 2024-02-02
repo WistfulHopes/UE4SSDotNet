@@ -211,6 +211,7 @@ namespace UE4SSDotNetFramework.Framework
 			if (message == null)
 				throw new ArgumentNullException(nameof(message));
 
+			Console.WriteLine(message);
 			Log(level, message.StringToBytes());
 		}
 	}
