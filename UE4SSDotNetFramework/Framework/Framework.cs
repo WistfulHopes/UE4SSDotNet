@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -213,14 +214,14 @@ namespace UE4SSDotNetFramework.Framework
 			return HookInternal(address, hook, ref original);
 		}
 		
-		public static unsafe int HookUFunctionPre(string name, UnrealScriptFunctionCallable preCallback, void* customData)
+		public static unsafe int HookUFunctionPre(ObjectReference function, UnrealScriptFunctionCallable preCallback, void* customData)
 		{
-			return HookUFunctionPreInternal(name, preCallback, customData);
+			return HookUFunctionPre(function.Pointer, preCallback, customData);
 		}
 		
-		public static unsafe int HookUFunctionPost(string name, UnrealScriptFunctionCallable postCallback, void* customData)
+		public static unsafe int HookUFunctionPost(ObjectReference function, UnrealScriptFunctionCallable postCallback, void* customData)
 		{
-			return HookUFunctionPostInternal(name, postCallback, customData);
+			return HookUFunctionPost(function.Pointer, postCallback, customData);
 		}
 		
 		public static void Unhook(IntPtr hook)
@@ -228,9 +229,9 @@ namespace UE4SSDotNetFramework.Framework
 			UnhookInternal(hook);
 		}
 		
-		public static bool Unhook(string name, int callbackId)
+		public static bool UnhookUFunction(ObjectReference function, int callbackId)
 		{
-			return UnhookUFunctionInternal(name, callbackId);
+			return UnhookUFunction(function.Pointer, callbackId);
 		}
 	}
 
@@ -301,6 +302,19 @@ namespace UE4SSDotNetFramework.Framework
             ArgumentNullException.ThrowIfNull(name);
 
             var pointer = Object.Find(name.StringToBytes());
+
+			return pointer != IntPtr.Zero ? new ObjectReference(pointer) : null;
+		}
+
+		/// <summary>
+		/// Finds an object by name
+		/// </summary>
+		/// <returns>An object or <c>null</c> on failure</returns>
+		public static ObjectReference? FindFirstOf(string name)
+		{
+			ArgumentNullException.ThrowIfNull(name);
+
+			var pointer = Object.FindFirstOf(name.StringToBytes());
 
 			return pointer != IntPtr.Zero ? new ObjectReference(pointer) : null;
 		}
@@ -423,6 +437,36 @@ namespace UE4SSDotNetFramework.Framework
 			return Object.GetStruct(Pointer, name.StringToBytes(), ref valuePtr) ? new StructReference(valuePtr) : null;
 		}
 
+		public Vector3 GetVector(string name)
+		{
+			var vec = GetStruct(name);
+			if (vec is null) return Vector3.Zero;
+            
+			float x = 0, y = 0, z = 0;
+            
+			vec.GetFloat("X", ref x);
+			vec.GetFloat("Y", ref y);
+			vec.GetFloat("Z", ref z);
+                
+			var ret = new Vector3(x, y ,z);
+			return ret;
+		}
+
+		public Vector3 GetRotator(string name)
+		{
+			var vec = GetStruct(name);
+			if (vec is null) return Vector3.Zero;
+            
+			float x = 0, y = 0, z = 0;
+            
+			vec.GetFloat("Roll", ref x);
+			vec.GetFloat("Pitch", ref y);
+			vec.GetFloat("Yaw", ref z);
+                
+			var ret = new Vector3(x, y ,z);
+			return ret;
+		}
+		
 		/// <summary>
 		/// Retrieves the value of the array property
 		/// </summary>
@@ -605,6 +649,26 @@ namespace UE4SSDotNetFramework.Framework
 			ArgumentNullException.ThrowIfNull(name);
 
 			return Object.SetStruct(Pointer, name.StringToBytes(), value.Pointer);
+		}
+		
+		public void SetVector(string name, Vector3 val)
+		{
+			var vec = GetStruct(name);
+			if (vec is null) return;
+            
+			vec.SetFloat("X", val.X);
+			vec.SetFloat("Y", val.Y);
+			vec.SetFloat("Z", val.Z);
+		}
+		
+		public void SetRotator(string name, Vector3 val)
+		{
+			var vec = GetStruct(name);
+			if (vec is null) return;
+            
+			vec.SetFloat("Roll", val.X);
+			vec.SetFloat("Pitch", val.Y);
+			vec.SetFloat("Yaw", val.Z);
 		}
 		
 		/// <summary>
