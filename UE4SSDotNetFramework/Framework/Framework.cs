@@ -146,6 +146,19 @@ namespace UE4SSDotNetFramework.Framework
 		Error,
 	}
 
+	public static unsafe partial class Runtime
+	{
+		public static void AddUnrealInitCallback(delegate* unmanaged[Cdecl]<void> callback)
+		{
+			AddUnrealInitCallbackInternal(callback);
+		}
+		
+		public static void AddUpdateCallback(delegate* unmanaged[Cdecl]<void> callback)
+		{
+			AddUpdateCallbackInternal(callback);
+		}
+	}
+	
 	/// <summary>
 	/// Functionality for debugging
 	/// </summary>

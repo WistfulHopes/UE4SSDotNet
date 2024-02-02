@@ -219,6 +219,14 @@ public struct UnrealScriptFunctionCallableContext
 	public unsafe void* ResultDecl;
 }
 
+static partial class Runtime
+{
+	[DllImport("CSharpLoader.dll", EntryPoint = "?add_unreal_init_callback@Runtime@DotNetLibrary@RC@@SAXP6AXXZ@Z")]
+	private static extern unsafe void AddUnrealInitCallbackInternal(delegate* unmanaged[Cdecl]<void> callback);
+	[DllImport("CSharpLoader.dll", EntryPoint = "?add_update_callback@Runtime@DotNetLibrary@RC@@SAXP6AXXZ@Z")]
+	private static extern unsafe void AddUpdateCallbackInternal(delegate* unmanaged[Cdecl]<void> callback);
+}
+
 static partial class Hooking
 {
 	public unsafe delegate void UnrealScriptFunctionCallable(UnrealScriptFunctionCallableContext* context, void* customData);
