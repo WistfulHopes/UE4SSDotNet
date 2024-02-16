@@ -122,13 +122,13 @@ namespace UE4SSDotNetFramework.Framework
 			return managedArray;
 		}
 
-		public void ArrayToData<T>(T[] Array)
+		public void ArrayToData<T>(T[] array)
 		{
 			long longPtr = Data.ToInt64(); // Must work both on x86 and x64
-			for (int I = 0; I < Array.Length; I++)
+			for (int I = 0; I < array.Length; I++)
 			{
 				IntPtr rectPtr = new IntPtr(longPtr);
-				Marshal.StructureToPtr(Array[I], rectPtr, false); // You do not need to erase struct in this case
+				Marshal.StructureToPtr(array[I], rectPtr, false); // You do not need to erase struct in this case
 				longPtr += Marshal.SizeOf(typeof(T));
 			}
 		}
@@ -333,10 +333,27 @@ namespace UE4SSDotNetFramework.Framework
 			return pointer != IntPtr.Zero ? new ObjectReference(pointer) : null;
 		}
 		
-		/// <summary>
-		/// Invokes a command, function, or an event with optional arguments
-		/// </summary>
-		public bool Invoke(ObjectReference function, IntPtr @params) => Object.Invoke(Pointer, function.Pointer, @params);
+	    public unsafe T ProcessEvent<T>(ObjectReference function, Dictionary<string, object> paramsDict) where T : unmanaged
+	    {
+		    var size = Function.GetParmsSize(function.Pointer);
+		    var @params = Marshal.AllocHGlobal(size);
+
+		    foreach (var entry in paramsDict)
+		    {
+			    var offset = Function.GetOffsetOfParam(function.Pointer, entry.Key.StringToBytes());
+			    var paramSize = Function.GetSizeOfParam(function.Pointer, entry.Key.StringToBytes());
+			    var memory = IntPtr.Zero;
+			    Marshal.StructureToPtr(entry.Value, memory, true);
+			    
+			    Buffer.MemoryCopy((void*)memory, (void*)(@params + offset), size - offset, paramSize);
+		    }
+		    
+		    Object.Invoke(Pointer, function.Pointer, @params);
+
+		    var returnVal = Marshal.PtrToStructure<T>(@params + Function.GetReturnValueOffset(function.Pointer));
+		    Marshal.FreeHGlobal(@params);
+		    return returnVal;
+	    }
 
 		/// <summary>
 		/// Retrieves the value of the object property

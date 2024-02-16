@@ -362,3 +362,15 @@ internal static class Class
 	[DllImport("CSharpLoader.dll", EntryPoint = "?IsChildOf@Class@Framework@DotNetLibrary@RC@@CA_NPEAVUClass@Unreal@4@0@Z")]
 	internal static extern bool IsChildOf(IntPtr @class, IntPtr parent);
 }
+
+internal static class Function
+{
+	[DllImport("CSharpLoader.dll", EntryPoint = "?GetParmsSize@Function@Framework@DotNetLibrary@RC@@CAHPEAVUFunction@Unreal@4@@Z")]
+	internal static extern int GetParmsSize(IntPtr func);
+	[DllImport("CSharpLoader.dll", EntryPoint = "?GetOffsetOfParam@Function@Framework@DotNetLibrary@RC@@CAHPEAVUFunction@Unreal@4@PEBD@Z")]
+	internal static extern int GetOffsetOfParam(IntPtr func, byte[] name);
+	[DllImport("CSharpLoader.dll", EntryPoint = "?GetSizeOfParam@Function@Framework@DotNetLibrary@RC@@CAHPEAVUFunction@Unreal@4@PEBD@Z")]
+	internal static extern int GetSizeOfParam(IntPtr func, byte[] name);
+	[DllImport("CSharpLoader.dll", EntryPoint = "?GetReturnValueOffset@Function@Framework@DotNetLibrary@RC@@CAHPEAVUFunction@Unreal@4@@Z")]
+	internal static extern int GetReturnValueOffset(IntPtr func);
+}
