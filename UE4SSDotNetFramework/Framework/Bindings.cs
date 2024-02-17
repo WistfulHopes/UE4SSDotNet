@@ -222,7 +222,7 @@ static partial class Runtime
 static partial class Hooking
 {
 	[UnmanagedFunctionPointer(CallingConvention.ThisCall)]
-	public unsafe delegate void UFunctionCallback(IntPtr @this, void** @params, void* retValue);
+	public unsafe delegate void UFunctionCallback(IntPtr @this, void*[] @params, void* retValue);
 	
 	[DllImport("CSharpLoader.dll", EntryPoint = "?SigScan@Hooking@Framework@DotNetLibrary@RC@@SA_JPEBD@Z")]
 	private static extern IntPtr SigScan(byte[] signature);
