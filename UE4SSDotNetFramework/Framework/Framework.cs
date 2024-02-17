@@ -215,6 +215,23 @@ namespace UE4SSDotNetFramework.Framework
 			Log(level, message.StringToBytes());
 		}
 	}
+
+	[InlineArray(0x30)]
+	public struct FlowStackType
+	{
+		private byte _element0;
+	}
+
+	/// <summary>
+	/// A representation of the engine's object reference
+	/// </summary>
+	[StructLayout(LayoutKind.Sequential)]
+	public unsafe struct FOutParmRec
+	{
+		public IntPtr Property;
+		public byte* PropAddr;
+		public FOutParmRec* NextOutParm;
+	}
 	
 	public static partial class Hooking
 	{
@@ -228,14 +245,9 @@ namespace UE4SSDotNetFramework.Framework
 			return HookInternal(address, hook, ref original);
 		}
 		
-		public static unsafe int HookUFunctionPre(ObjectReference function, UnrealScriptFunctionCallable preCallback, void* customData)
+		public static unsafe int HookUFunction(ObjectReference function, UFunctionCallback preCallback, UFunctionCallback postCallback)
 		{
-			return HookUFunctionPre(function.Pointer, preCallback, customData);
-		}
-		
-		public static unsafe int HookUFunctionPost(ObjectReference function, UnrealScriptFunctionCallable postCallback, void* customData)
-		{
-			return HookUFunctionPost(function.Pointer, postCallback, customData);
+			return HookUFunction(function.Pointer, preCallback, postCallback);
 		}
 		
 		public static void Unhook(IntPtr hook)
@@ -243,9 +255,9 @@ namespace UE4SSDotNetFramework.Framework
 			UnhookInternal(hook);
 		}
 		
-		public static bool UnhookUFunction(ObjectReference function, int callbackId)
+		public static bool UnhookUFunction(ObjectReference function, long callbackIds)
 		{
-			return UnhookUFunction(function.Pointer, callbackId);
+			return UnhookUFunction(function.Pointer, callbackIds);
 		}
 	}
 
@@ -332,26 +344,65 @@ namespace UE4SSDotNetFramework.Framework
 
 			return pointer != IntPtr.Zero ? new ObjectReference(pointer) : null;
 		}
+
+		public unsafe void ProcessEvent(ObjectReference function, Span<(string name, object value)> @params)
+		{
+			var size = Function.GetParmsSize(function.Pointer);
+			var paramsPtr = Marshal.AllocHGlobal(size);
+
+			foreach (var entry in @params)
+			{
+				var offset = Function.GetOffsetOfParam(function.Pointer, entry.name.StringToBytes());
+				var paramSize = Function.GetSizeOfParam(function.Pointer, entry.name.StringToBytes());
+				var memory = Marshal.AllocHGlobal(paramSize);
+				Marshal.StructureToPtr(entry.value, memory, true);
+			    
+				Buffer.MemoryCopy((void*)memory, (void*)(paramsPtr + offset), size - offset, paramSize);
+			}
+		    
+			Object.Invoke(Pointer, function.Pointer, paramsPtr);
+			Marshal.FreeHGlobal(paramsPtr);
+		}
+
+		public void ProcessEvent(ObjectReference function)
+		{
+			var size = Function.GetParmsSize(function.Pointer);
+			var paramsPtr = Marshal.AllocHGlobal(size);
+		    
+			Object.Invoke(Pointer, function.Pointer, paramsPtr);
+		}
 		
-	    public unsafe T ProcessEvent<T>(ObjectReference function, Dictionary<string, object> paramsDict) where T : unmanaged
+	    public unsafe T ProcessEvent<T>(ObjectReference function, Span<(string name, object value)> @params) where T : unmanaged
 	    {
 		    var size = Function.GetParmsSize(function.Pointer);
-		    var @params = Marshal.AllocHGlobal(size);
+		    var paramsPtr = Marshal.AllocHGlobal(size);
 
-		    foreach (var entry in paramsDict)
+		    foreach (var entry in @params)
 		    {
-			    var offset = Function.GetOffsetOfParam(function.Pointer, entry.Key.StringToBytes());
-			    var paramSize = Function.GetSizeOfParam(function.Pointer, entry.Key.StringToBytes());
-			    var memory = IntPtr.Zero;
-			    Marshal.StructureToPtr(entry.Value, memory, true);
+			    var offset = Function.GetOffsetOfParam(function.Pointer, entry.name.StringToBytes());
+			    var paramSize = Function.GetSizeOfParam(function.Pointer, entry.name.StringToBytes());
+			    var memory = Marshal.AllocHGlobal(paramSize);
+			    Marshal.StructureToPtr(entry.value, memory, true);
 			    
-			    Buffer.MemoryCopy((void*)memory, (void*)(@params + offset), size - offset, paramSize);
+			    Buffer.MemoryCopy((void*)memory, (void*)(paramsPtr + offset), size - offset, paramSize);
 		    }
 		    
-		    Object.Invoke(Pointer, function.Pointer, @params);
+		    Object.Invoke(Pointer, function.Pointer, paramsPtr);
 
-		    var returnVal = Marshal.PtrToStructure<T>(@params + Function.GetReturnValueOffset(function.Pointer));
-		    Marshal.FreeHGlobal(@params);
+		    var returnVal = Marshal.PtrToStructure<T>(paramsPtr + Function.GetReturnValueOffset(function.Pointer));
+		    Marshal.FreeHGlobal(paramsPtr);
+		    return returnVal;
+	    }
+	    
+	    public T ProcessEvent<T>(ObjectReference function) where T : unmanaged
+	    {
+		    var size = Function.GetParmsSize(function.Pointer);
+		    var paramsPtr = Marshal.AllocHGlobal(size);
+		    
+		    Object.Invoke(Pointer, function.Pointer, paramsPtr);
+
+		    var returnVal = Marshal.PtrToStructure<T>(paramsPtr + Function.GetReturnValueOffset(function.Pointer));
+		    Marshal.FreeHGlobal(paramsPtr);
 		    return returnVal;
 	    }
 

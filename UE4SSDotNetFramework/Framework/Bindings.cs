@@ -211,14 +211,6 @@ static partial class Debug {
 	private static extern void Log(LogLevel level, byte[] message);
 }
 
-[StructLayout(LayoutKind.Sequential)]
-public struct UnrealScriptFunctionCallableContext
-{
-	public IntPtr Context;
-	public IntPtr Stack;
-	public unsafe void* ResultDecl;
-}
-
 static partial class Runtime
 {
 	[DllImport("CSharpLoader.dll", EntryPoint = "?add_unreal_init_callback@Runtime@DotNetLibrary@RC@@SAXP6AXXZ@Z")]
@@ -229,20 +221,18 @@ static partial class Runtime
 
 static partial class Hooking
 {
-	public unsafe delegate void UnrealScriptFunctionCallable(UnrealScriptFunctionCallableContext* context, void* customData);
+	public unsafe delegate void UFunctionCallback(IntPtr @this, void* @params, void* outParams, void* returnVal);
 	
 	[DllImport("CSharpLoader.dll", EntryPoint = "?SigScan@Hooking@Framework@DotNetLibrary@RC@@SA_JPEBD@Z")]
 	private static extern IntPtr SigScan(byte[] signature);
 	[DllImport("CSharpLoader.dll", EntryPoint = "?Hook@Hooking@Framework@DotNetLibrary@RC@@SAPEAVx64Detour@PLH@@_K0PEA_K@Z")]
 	private static extern IntPtr HookInternal(IntPtr address, IntPtr hook, ref IntPtr original);
-	[DllImport("CSharpLoader.dll", EntryPoint = "?HookUFunctionPre@Hooking@Framework@DotNetLibrary@RC@@SAHPEAVUFunction@Unreal@4@AEBV?$function@$$A6AXAEAVUnrealScriptFunctionCallableContext@Unreal@RC@@PEAX@Z@std@@PEAX@Z")]
-	private static extern unsafe int HookUFunctionPre(IntPtr function, UnrealScriptFunctionCallable preCallback, void* customData);
-	[DllImport("CSharpLoader.dll", EntryPoint = "?HookUFunctionPost@Hooking@Framework@DotNetLibrary@RC@@SAHPEAVUFunction@Unreal@4@AEBV?$function@$$A6AXAEAVUnrealScriptFunctionCallableContext@Unreal@RC@@PEAX@Z@std@@PEAX@Z")]
-	private static extern unsafe int HookUFunctionPost(IntPtr function, UnrealScriptFunctionCallable postCallback, void* customData);
+	[DllImport("CSharpLoader.dll", EntryPoint = "?HookUFunction@Hooking@Framework@DotNetLibrary@RC@@SA?AUCallbackIds@234@PEAVUFunction@Unreal@4@V?$function@$$A6AXPEAVUObject@Unreal@RC@@PEAX11@Z@std@@1@Z")]
+	private static extern unsafe int HookUFunction(IntPtr function, UFunctionCallback preCallback, UFunctionCallback postCallback);
 	[DllImport("CSharpLoader.dll", EntryPoint = "?Unhook@Hooking@Framework@DotNetLibrary@RC@@SAXPEAVx64Detour@PLH@@@Z")]
 	private static extern void UnhookInternal(IntPtr hook);
-	[DllImport("CSharpLoader.dll", EntryPoint = "?UnhookUFunction@Hooking@Framework@DotNetLibrary@RC@@SA_NPEAVUFunction@Unreal@4@H@Z")]
-	private static extern bool UnhookUFunction(IntPtr function, int callbackId);
+	[DllImport("CSharpLoader.dll", EntryPoint = "?UnhookUFunction@Hooking@Framework@DotNetLibrary@RC@@SAXPEAVUFunction@Unreal@4@UCallbackIds@234@@Z")]
+	private static extern bool UnhookUFunction(IntPtr function, long callbackIds);
 }
 
 internal static class Object
