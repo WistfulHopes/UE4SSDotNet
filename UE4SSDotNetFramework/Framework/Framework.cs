@@ -245,9 +245,15 @@ namespace UE4SSDotNetFramework.Framework
 			return HookInternal(address, hook, ref original);
 		}
 		
-		public static unsafe int HookUFunction(ObjectReference function, UFunctionCallback preCallback, UFunctionCallback postCallback)
+		public static unsafe long HookUFunction(
+			ObjectReference function, 
+			UFunctionCallback preCallback, 
+			UFunctionCallback postCallback)
 		{
-			return HookUFunction(function.Pointer, preCallback, postCallback);
+			return HookUFunction(
+				function.Pointer,
+				Marshal.GetFunctionPointerForDelegate(preCallback),
+				Marshal.GetFunctionPointerForDelegate(postCallback));
 		}
 		
 		public static void Unhook(IntPtr hook)
