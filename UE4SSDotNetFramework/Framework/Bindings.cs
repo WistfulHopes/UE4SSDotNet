@@ -228,7 +228,7 @@ static partial class Hooking
 	private static extern IntPtr SigScan(byte[] signature);
 	[DllImport("CSharpLoader.dll", EntryPoint = "?Hook@Hooking@Framework@DotNetLibrary@RC@@SAPEAVx64Detour@PLH@@_K0PEA_K@Z")]
 	private static extern IntPtr HookInternal(IntPtr address, IntPtr hook, ref IntPtr original);
-	[DllImport("CSharpLoader.dll", EntryPoint = "?HookUFunction@Hooking@Framework@DotNetLibrary@RC@@SA?AUCallbackIds@234@PEAVUFunction@Unreal@4@P6AXPEAVUObject@74@PEAX22@Z3@Z")]
+	[DllImport("CSharpLoader.dll", EntryPoint = "?HookUFunction@Hooking@Framework@DotNetLibrary@RC@@SA?AUCallbackIds@234@PEAVUFunction@Unreal@4@P6AXPEAVUObject@74@PEAPEAXPEAX@Z4@Z")]
 	private static extern long HookUFunction(IntPtr function, IntPtr preCallback, IntPtr postCallback);
 	[DllImport("CSharpLoader.dll", EntryPoint = "?Unhook@Hooking@Framework@DotNetLibrary@RC@@SAXPEAVx64Detour@PLH@@@Z")]
 	private static extern void UnhookInternal(IntPtr hook);
