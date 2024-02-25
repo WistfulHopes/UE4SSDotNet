@@ -361,7 +361,22 @@ namespace UE4SSDotNetFramework.Framework
 				var offset = Function.GetOffsetOfParam(function.Pointer, entry.name.StringToBytes());
 				var paramSize = Function.GetSizeOfParam(function.Pointer, entry.name.StringToBytes());
 				var memory = Marshal.AllocHGlobal(paramSize);
-				Marshal.StructureToPtr(entry.value, memory, true);
+
+                if (entry.value is Enum)
+                {
+                    object value = paramSize switch
+                    {
+                        1 => Convert.ToByte(entry.value),
+                        2 => Convert.ToInt16(entry.value),
+                        4 => Convert.ToInt32(entry.value),
+                        _ => Convert.ToInt64(entry.value),
+                    };
+                    Marshal.StructureToPtr(value, memory, true);
+                }
+                else
+                {
+					Marshal.StructureToPtr(entry.value, memory, true);
+                }
 			    
 				Buffer.MemoryCopy((void*)memory, (void*)(paramsPtr + offset), size - offset, paramSize);
 			}
