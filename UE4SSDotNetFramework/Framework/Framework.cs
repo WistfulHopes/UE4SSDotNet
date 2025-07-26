@@ -157,6 +157,16 @@ namespace UE4SSDotNetFramework.Framework
 		{
 			AddUpdateCallbackInternal(callback);
 		}
+
+		public static bool IsUnrealInit()
+		{
+			return IsUnrealInitInternal();
+		}
+		
+		public static bool IsCSharpLoaderLoaded()
+		{
+			return GetModuleHandle("CSharpLoader.dll") != IntPtr.Zero;
+		}
 	}
 	
 	/// <summary>

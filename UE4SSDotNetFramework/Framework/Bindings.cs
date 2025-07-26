@@ -217,6 +217,11 @@ static partial class Runtime
 	private static extern unsafe void AddUnrealInitCallbackInternal(delegate* unmanaged[Cdecl]<void> callback);
 	[DllImport("CSharpLoader.dll", EntryPoint = "?add_update_callback@Runtime@DotNetLibrary@RC@@SAXP6AXXZ@Z")]
 	private static extern unsafe void AddUpdateCallbackInternal(delegate* unmanaged[Cdecl]<void> callback);
+	[DllImport("CSharpLoader.dll", EntryPoint = "?is_unreal_init@Runtime@DotNetLibrary@RC@@SA_NXZ")]
+	private static extern bool IsUnrealInitInternal();
+	
+	[DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
+	private static extern IntPtr GetModuleHandle(string lpModuleName);
 }
 
 static partial class Hooking
